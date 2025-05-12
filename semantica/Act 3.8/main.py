@@ -1,4 +1,5 @@
 from lexer import tokens, lexer, input_program
+from semantic_cube import semantic_cube
 import ply.yacc as yacc
 
 start = 'programa'
@@ -6,11 +7,19 @@ start = 'programa'
 current_program = 'program'
 function_directory = {}
 scope_stack=[]
+operator_stack = []
 
 operand_stack = []
 
 syntax_error = 0
 error_list = []
+
+def push_operand(name, var_type, value=None):
+    operand_stack.append({
+        "name": name,
+        "type": var_type,
+        "value": value
+    })
 
 def declare_vars_in_scope(id_list, var_type, lineno):
     current_scope = scope_stack[-1]
@@ -214,11 +223,11 @@ def p_expression(t):
 
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
-    t[0] = t[1] < t[3]
+    # t[0] = t[1] < t[3]
 
 def p_expression_more(t):
     'expression : exp op_more_than exp'
-    t[0] = t[1] > t[3]
+    # t[0] = t[1] > t[3]
 
 def p_expression_less_equal(t):
     'expression : exp op_lessthan_equal exp'
@@ -239,11 +248,11 @@ def p_expression_not_equal(t):
 #EXP      ::= TERM ( ( '+' | '-' ) TERM )*
 def p_exp_suma(t):
     'exp : exp op_plus term'
-    t[0] = t[1] + t[3]
+    # t[0] = t[1] + t[3]
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
-    t[0] = t[1] - t[3]
+    # t[0] = t[1] - t[3]
 
 def p_exp_term(t):
     'exp : term'
@@ -252,7 +261,7 @@ def p_exp_term(t):
 #TERM     ::= FACTOR ( ( '*' | '/' ) FACTOR )*
 def p_term_mult(t):
     'term : term op_mult factor'
-    t[0] = t[1] * t[3]
+    # t[0] = t[1] * t[3]
 
 def p_term_div(t):
     'term : term op_div factor'
@@ -271,22 +280,22 @@ def p_factor_expression(t):
 def p_factor_plus_id(t):
     'factor : op_plus identifier'
     # try:
-    #     t[0] = +names[t[2]]
+    #     t[0] = scope_stack[-1][t[2]]
     # except LookupError:
     #     #print("undefined variable '%s'" % t[2]) 
     #     t[0] = 0
 
 def p_factor_plus_cte(t):
     'factor : op_plus cte'
-    t[0] = + t[2]
+    t[0] = t[2]
 
 def p_factor_minus_id(t):
     'factor : op_minus identifier'
-    # try:
-    #     t[0] = -names[t[2]]
-    # except LookupError:
-    #     #print("undefined variable '%s'" % t[2]) 
-    #     t[0] = 0
+    try:
+        t[0] = -scope_stack[-1][t[1]]
+    except LookupError:
+        #print("undefined variable '%s'" % t[2]) 
+        t[0] = 0
 
 def p_factor_minus_cte(t):
     'factor : op_minus cte'
@@ -294,11 +303,14 @@ def p_factor_minus_cte(t):
 
 def p_factor_id(t):
     'factor : identifier'
-    # try:
-    #     t[0] = names[t[1]]
-    # except LookupError:
-    #     #print("undefined variable '%s'" % t[1]) 
-    #     t[0] = 0
+    name = t[1]
+    var = scope_stack[-1].get(name)
+    if var:
+        push_operand(name, var['type'], var['value'])
+        t[0] = var['value']
+    else:
+        error_list.append(f"Undeclared variable '{name}'")
+        t[0] = 0
 
 def p_factor_cte(t):
     'factor : cte'
@@ -307,11 +319,16 @@ def p_factor_cte(t):
 #CTE      ::= 'cte_int' | 'cte_float'
 def p_cte_int(t):
     'cte : const_int'
-    t[0] = int(t[1])
+    value = t[1]
+    push_operand(str(value), 'int', value)
+    t[0] = value
+    
 
 def p_cte_float(t):
     'cte : const_float'
-    t[0] = float(t[1]) 
+    value = t[1]
+    push_operand(str(value), 'float', value)
+    t[0] = value 
 
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
