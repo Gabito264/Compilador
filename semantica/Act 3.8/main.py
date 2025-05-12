@@ -7,19 +7,21 @@ start = 'programa'
 current_program = 'program'
 function_directory = {}
 scope_stack=[]
-operator_stack = []
 
+operator_stack = []
 operand_stack = []
 
 syntax_error = 0
 error_list = []
 
-def push_operand(name, var_type, value=None):
-    operand_stack.append({
-        "name": name,
-        "type": var_type,
-        "value": value
-    })
+class objects:
+    t_count = 0
+    quad_list = []
+    def __init__(self):
+        self.t_count = 0
+        self.quad_list = []
+
+Ds = objects()
 
 def declare_vars_in_scope(id_list, var_type, lineno):
     current_scope = scope_stack[-1]
@@ -32,14 +34,16 @@ def declare_vars_in_scope(id_list, var_type, lineno):
                     'scope' : 'global',
                     'type': var_type,
                     'value': None,
-                    'declared_line': lineno
+                    'declared_line': lineno,
+                    'is_null' : True
                 }
             else:
                 current_scope[name] = {
                     'scope' : 'local',
                     'type': var_type,
                     'value': None,
-                    'declared_line': lineno
+                    'declared_line': lineno,
+                    'is_null' : True
                 }
 
 #PROGRAMA ::= 'program' 'id' ';' VARS? FUNCS* 'main' BODY 'end'
@@ -182,6 +186,7 @@ def p_statements_empty(t):
 def p_statement_assign(t):
     'statement : assign'
     t[0] = t[1]
+    
 
 def p_statement_condition(t):
     'statement : condition'
@@ -202,8 +207,11 @@ def p_statement_print(t):
 # ASSIGN   ::= 'id' '=' (EXPRESSION | 'cte_string' ) ';'
 def p_assign(t):
     'assign : identifier op_assign expression semicol'
-    name = t[1]
-    value = t[3]
+    last, last_type, is_valid = operand_stack.pop()
+    if(scope_stack[-1][t[1]]):
+        scope_stack[-1][t[1]]["is_Null"] = False
+        result = ('=', last, None, t[1])
+        print(result)
 
 def p_assign_string(t):
     'assign : identifier op_assign const_string semicol'
@@ -249,6 +257,17 @@ def p_expression_not_equal(t):
 def p_exp_suma(t):
     'exp : exp op_plus term'
     # t[0] = t[1] + t[3]
+    right, r_type, r_valid = operand_stack.pop()
+    left, l_type, l_valid= operand_stack.pop()
+    result = semantic_cube[l_type]["+"][r_type]
+    if (result != "error"):
+        Ds.t_count +=1
+        
+        temp = "t_" + str(Ds.t_count)
+        operand_stack.append((temp, result, 1))
+        print("+ ", left, right, temp)
+    else:
+        print("Invalid sum operation between " , l_type," and " ,r_type)
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
@@ -305,29 +324,31 @@ def p_factor_id(t):
     'factor : identifier'
     name = t[1]
     var = scope_stack[-1].get(name)
-    if var:
-        push_operand(name, var['type'], var['value'])
-        t[0] = var['value']
+    if (var):
+        operand_stack.append((name, var["type"], 1))
     else:
-        error_list.append(f"Undeclared variable '{name}'")
-        t[0] = 0
+        print("Inexistent identifier ", name, " in scope")
+        operand_stack.append((name, "None", 0))
+
+
 
 def p_factor_cte(t):
     'factor : cte'
     t[0] = t[1]
 
+
 #CTE      ::= 'cte_int' | 'cte_float'
 def p_cte_int(t):
     'cte : const_int'
     value = t[1]
-    push_operand(str(value), 'int', value)
+    operand_stack.append((t[1], "int", 1))
     t[0] = value
     
 
 def p_cte_float(t):
     'cte : const_float'
     value = t[1]
-    push_operand(str(value), 'float', value)
+    operand_stack.append((t[1], "float", 1))
     t[0] = value 
 
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
@@ -444,3 +465,6 @@ if syntax_error > 0:
         print("Unknown error also detected that stopped analysis abruptly")
 else:
     print("\nNO ERRORS FOUND ")
+
+print(operand_stack)
+#print(function_directory)

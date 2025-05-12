@@ -10,31 +10,7 @@ main {
     
    
 
-    A = 7;
-    B = 1;
-
-    C = 12;
-    D = 10;
-
- 
-
-    if (A + B > D)
-    {
-        if (A < B)
-        {
-            A = 0;
-            B = B + D;
-        }
-        else
-        {
-            C = A + B;
-        };
-    }
-    else
-    {
-        A = B + C;
-    };
-    D = B + A * C;
+    A = 7 + 4 + 5 + 3;
 
 
 } end
