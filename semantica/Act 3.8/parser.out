@@ -77,18 +77,23 @@ Rule 67    print_arg -> const_string
 Rule 68    print_statement -> PRINT opening_par error closing_par semicol
 Rule 69    cycle -> DO body WHILE opening_par expression closing_par semicol
 Rule 70    cycle -> DO body WHILE opening_par error closing_par semicol
-Rule 71    condition -> IF opening_par expression closing_par body check_else semicol
-Rule 72    check_else -> ELSE body
-Rule 73    check_else -> <empty>
-Rule 74    condition -> IF opening_par error closing_par body check_else semicol
+Rule 71    condition -> IF opening_par expression closing_par gotof body check_else last_goto
+Rule 72    gotof -> <empty>
+Rule 73    gotof_dummy -> <empty>
+Rule 74    check_else -> else_goto body
+Rule 75    else_goto -> ELSE
+Rule 76    last_goto -> semicol
+Rule 77    last_goto_dummy -> semicol
+Rule 78    check_else -> <empty>
+Rule 79    condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy
 
 Terminals, with rules where they appear
 
 DO                   : 69 70
-ELSE                 : 72
+ELSE                 : 75
 END                  : 1 4
 FLOAT                : 14
-IF                   : 71 74
+IF                   : 71 79
 INTEGER              : 13
 MAIN                 : 1 4
 PRINT                : 63 68
@@ -99,13 +104,13 @@ VOID                 : 18 23
 WHILE                : 69 70
 closing_anglbrack    : 24
 closing_brack        : 18 23
-closing_par          : 18 23 49 58 62 63 68 69 70 71 74
+closing_par          : 18 23 49 58 62 63 68 69 70 71
 comma                : 9 19 59 64
 comment              : 
 const_float          : 57
 const_int            : 56
 const_string         : 34 67
-error                : 4 11 12 23 35 62 68 70 74
+error                : 4 11 12 23 35 62 68 70 79
 identifier           : 1 9 10 18 22 23 33 34 35 50 52 54 58 62
 op_assign            : 33 34 35
 op_div               : 47
@@ -120,28 +125,33 @@ op_not_equal         : 42
 op_plus              : 43 50 51
 opening_anglbrack    : 24
 opening_brack        : 18 23
-opening_par          : 18 23 49 58 62 63 68 69 70 71 74
-semicol              : 1 4 7 8 11 12 18 23 33 34 35 58 62 63 68 69 70 71 74
+opening_par          : 18 23 49 58 62 63 68 69 70 71 79
+semicol              : 1 4 7 8 11 12 18 23 33 34 35 58 62 63 68 69 70 76 77
 twopoint             : 7 8 11 12 22
 
 Nonterminals, with rules where they appear
 
 arguments            : 58 59
 assign               : 28
-body                 : 1 4 18 23 69 70 71 72 74
-check_else           : 71 74
+body                 : 1 4 18 23 69 70 71 74 79
+check_else           : 71 79
 condition            : 29
 create_program       : 1
 cte                  : 51 53 55
 cycle                : 30
 elim_program         : 1
+else_goto            : 74
 exp                  : 36 37 37 38 38 39 39 40 40 41 41 42 42 43 44
 expression           : 33 49 59 60 66 69 71
 f_call               : 31
 factor               : 46 47 48
 func                 : 16
 funcs                : 1 4 16
+gotof                : 71
+gotof_dummy          : 79
 id_list              : 7 8 9
+last_goto            : 71
+last_goto_dummy      : 79
 param                : 19 20
 param_list           : 18 19
 print_arg            : 64 65
@@ -435,8 +445,8 @@ state 27
     (33) assign -> . identifier op_assign expression semicol
     (34) assign -> . identifier op_assign const_string semicol
     (35) assign -> . identifier op_assign error semicol
-    (71) condition -> . IF opening_par expression closing_par body check_else semicol
-    (74) condition -> . IF opening_par error closing_par body check_else semicol
+    (71) condition -> . IF opening_par expression closing_par gotof body check_else last_goto
+    (79) condition -> . IF opening_par error gotof_dummy body check_else last_goto_dummy
     (69) cycle -> . DO body WHILE opening_par expression closing_par semicol
     (70) cycle -> . DO body WHILE opening_par error closing_par semicol
     (58) f_call -> . identifier opening_par arguments closing_par semicol
@@ -560,8 +570,8 @@ state 37
     (33) assign -> . identifier op_assign expression semicol
     (34) assign -> . identifier op_assign const_string semicol
     (35) assign -> . identifier op_assign error semicol
-    (71) condition -> . IF opening_par expression closing_par body check_else semicol
-    (74) condition -> . IF opening_par error closing_par body check_else semicol
+    (71) condition -> . IF opening_par expression closing_par gotof body check_else last_goto
+    (79) condition -> . IF opening_par error gotof_dummy body check_else last_goto_dummy
     (69) cycle -> . DO body WHILE opening_par expression closing_par semicol
     (70) cycle -> . DO body WHILE opening_par error closing_par semicol
     (58) f_call -> . identifier opening_par arguments closing_par semicol
@@ -662,8 +672,8 @@ state 44
 
 state 45
 
-    (71) condition -> IF . opening_par expression closing_par body check_else semicol
-    (74) condition -> IF . opening_par error closing_par body check_else semicol
+    (71) condition -> IF . opening_par expression closing_par gotof body check_else last_goto
+    (79) condition -> IF . opening_par error gotof_dummy body check_else last_goto_dummy
 
     opening_par     shift and go to state 59
 
@@ -880,8 +890,8 @@ state 58
 
 state 59
 
-    (71) condition -> IF opening_par . expression closing_par body check_else semicol
-    (74) condition -> IF opening_par . error closing_par body check_else semicol
+    (71) condition -> IF opening_par . expression closing_par gotof body check_else last_goto
+    (79) condition -> IF opening_par . error gotof_dummy body check_else last_goto_dummy
     (36) expression -> . exp
     (37) expression -> . exp op_lesser_than exp
     (38) expression -> . exp op_more_than exp
@@ -1289,17 +1299,19 @@ state 84
 
 state 85
 
-    (71) condition -> IF opening_par expression . closing_par body check_else semicol
+    (71) condition -> IF opening_par expression . closing_par gotof body check_else last_goto
 
     closing_par     shift and go to state 118
 
 
 state 86
 
-    (74) condition -> IF opening_par error . closing_par body check_else semicol
+    (79) condition -> IF opening_par error . gotof_dummy body check_else last_goto_dummy
+    (73) gotof_dummy -> .
 
-    closing_par     shift and go to state 119
+    opening_anglbrack reduce using rule 73 (gotof_dummy -> .)
 
+    gotof_dummy                    shift and go to state 119
 
 state 87
 
@@ -1844,16 +1856,16 @@ state 117
 
 state 118
 
-    (71) condition -> IF opening_par expression closing_par . body check_else semicol
-    (24) body -> . opening_anglbrack statements closing_anglbrack
+    (71) condition -> IF opening_par expression closing_par . gotof body check_else last_goto
+    (72) gotof -> .
 
-    opening_anglbrack shift and go to state 27
+    opening_anglbrack reduce using rule 72 (gotof -> .)
 
-    body                           shift and go to state 140
+    gotof                          shift and go to state 140
 
 state 119
 
-    (74) condition -> IF opening_par error closing_par . body check_else semicol
+    (79) condition -> IF opening_par error gotof_dummy . body check_else last_goto_dummy
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
@@ -2185,38 +2197,38 @@ state 139
 
 state 140
 
-    (71) condition -> IF opening_par expression closing_par body . check_else semicol
-    (72) check_else -> . ELSE body
-    (73) check_else -> .
+    (71) condition -> IF opening_par expression closing_par gotof . body check_else last_goto
+    (24) body -> . opening_anglbrack statements closing_anglbrack
 
-    ELSE            shift and go to state 150
-    semicol         reduce using rule 73 (check_else -> .)
+    opening_anglbrack shift and go to state 27
 
-    check_else                     shift and go to state 149
+    body                           shift and go to state 149
 
 state 141
 
-    (74) condition -> IF opening_par error closing_par body . check_else semicol
-    (72) check_else -> . ELSE body
-    (73) check_else -> .
+    (79) condition -> IF opening_par error gotof_dummy body . check_else last_goto_dummy
+    (74) check_else -> . else_goto body
+    (78) check_else -> .
+    (75) else_goto -> . ELSE
 
-    ELSE            shift and go to state 150
-    semicol         reduce using rule 73 (check_else -> .)
+    semicol         reduce using rule 78 (check_else -> .)
+    ELSE            shift and go to state 152
 
-    check_else                     shift and go to state 151
+    check_else                     shift and go to state 150
+    else_goto                      shift and go to state 151
 
 state 142
 
     (69) cycle -> DO body WHILE opening_par expression . closing_par semicol
 
-    closing_par     shift and go to state 152
+    closing_par     shift and go to state 153
 
 
 state 143
 
     (70) cycle -> DO body WHILE opening_par error . closing_par semicol
 
-    closing_par     shift and go to state 153
+    closing_par     shift and go to state 154
 
 
 state 144
@@ -2253,97 +2265,121 @@ state 147
 
     (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body . closing_brack semicol
 
-    closing_brack   shift and go to state 154
+    closing_brack   shift and go to state 155
 
 
 state 148
 
     (23) func -> VOID identifier opening_par error closing_par opening_brack vars body . closing_brack semicol
 
-    closing_brack   shift and go to state 155
+    closing_brack   shift and go to state 156
 
 
 state 149
 
-    (71) condition -> IF opening_par expression closing_par body check_else . semicol
+    (71) condition -> IF opening_par expression closing_par gotof body . check_else last_goto
+    (74) check_else -> . else_goto body
+    (78) check_else -> .
+    (75) else_goto -> . ELSE
 
-    semicol         shift and go to state 156
+    semicol         reduce using rule 78 (check_else -> .)
+    ELSE            shift and go to state 152
 
+    check_else                     shift and go to state 157
+    else_goto                      shift and go to state 151
 
 state 150
 
-    (72) check_else -> ELSE . body
+    (79) condition -> IF opening_par error gotof_dummy body check_else . last_goto_dummy
+    (77) last_goto_dummy -> . semicol
+
+    semicol         shift and go to state 159
+
+    last_goto_dummy                shift and go to state 158
+
+state 151
+
+    (74) check_else -> else_goto . body
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
 
-    body                           shift and go to state 157
-
-state 151
-
-    (74) condition -> IF opening_par error closing_par body check_else . semicol
-
-    semicol         shift and go to state 158
-
+    body                           shift and go to state 160
 
 state 152
 
-    (69) cycle -> DO body WHILE opening_par expression closing_par . semicol
+    (75) else_goto -> ELSE .
 
-    semicol         shift and go to state 159
+    opening_anglbrack reduce using rule 75 (else_goto -> ELSE .)
 
 
 state 153
 
-    (70) cycle -> DO body WHILE opening_par error closing_par . semicol
-
-    semicol         shift and go to state 160
-
-
-state 154
-
-    (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack . semicol
+    (69) cycle -> DO body WHILE opening_par expression closing_par . semicol
 
     semicol         shift and go to state 161
 
 
-state 155
+state 154
 
-    (23) func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack . semicol
+    (70) cycle -> DO body WHILE opening_par error closing_par . semicol
 
     semicol         shift and go to state 162
 
 
+state 155
+
+    (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack . semicol
+
+    semicol         shift and go to state 163
+
+
 state 156
 
-    (71) condition -> IF opening_par expression closing_par body check_else semicol .
+    (23) func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack . semicol
 
-    closing_anglbrack reduce using rule 71 (condition -> IF opening_par expression closing_par body check_else semicol .)
-    identifier      reduce using rule 71 (condition -> IF opening_par expression closing_par body check_else semicol .)
-    IF              reduce using rule 71 (condition -> IF opening_par expression closing_par body check_else semicol .)
-    DO              reduce using rule 71 (condition -> IF opening_par expression closing_par body check_else semicol .)
-    PRINT           reduce using rule 71 (condition -> IF opening_par expression closing_par body check_else semicol .)
+    semicol         shift and go to state 164
 
 
 state 157
 
-    (72) check_else -> ELSE body .
+    (71) condition -> IF opening_par expression closing_par gotof body check_else . last_goto
+    (76) last_goto -> . semicol
 
-    semicol         reduce using rule 72 (check_else -> ELSE body .)
+    semicol         shift and go to state 166
 
+    last_goto                      shift and go to state 165
 
 state 158
 
-    (74) condition -> IF opening_par error closing_par body check_else semicol .
+    (79) condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .
 
-    closing_anglbrack reduce using rule 74 (condition -> IF opening_par error closing_par body check_else semicol .)
-    identifier      reduce using rule 74 (condition -> IF opening_par error closing_par body check_else semicol .)
-    IF              reduce using rule 74 (condition -> IF opening_par error closing_par body check_else semicol .)
-    DO              reduce using rule 74 (condition -> IF opening_par error closing_par body check_else semicol .)
-    PRINT           reduce using rule 74 (condition -> IF opening_par error closing_par body check_else semicol .)
+    closing_anglbrack reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    identifier      reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    IF              reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    DO              reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    PRINT           reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
 
 
 state 159
+
+    (77) last_goto_dummy -> semicol .
+
+    closing_anglbrack reduce using rule 77 (last_goto_dummy -> semicol .)
+    identifier      reduce using rule 77 (last_goto_dummy -> semicol .)
+    IF              reduce using rule 77 (last_goto_dummy -> semicol .)
+    DO              reduce using rule 77 (last_goto_dummy -> semicol .)
+    PRINT           reduce using rule 77 (last_goto_dummy -> semicol .)
+
+
+state 160
+
+    (74) check_else -> else_goto body .
+
+    semicol         reduce using rule 74 (check_else -> else_goto body .)
+
+
+state 161
 
     (69) cycle -> DO body WHILE opening_par expression closing_par semicol .
 
@@ -2354,7 +2390,7 @@ state 159
     PRINT           reduce using rule 69 (cycle -> DO body WHILE opening_par expression closing_par semicol .)
 
 
-state 160
+state 162
 
     (70) cycle -> DO body WHILE opening_par error closing_par semicol .
 
@@ -2365,7 +2401,7 @@ state 160
     PRINT           reduce using rule 70 (cycle -> DO body WHILE opening_par error closing_par semicol .)
 
 
-state 161
+state 163
 
     (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack semicol .
 
@@ -2373,12 +2409,34 @@ state 161
     MAIN            reduce using rule 18 (func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack semicol .)
 
 
-state 162
+state 164
 
     (23) func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol .
 
     VOID            reduce using rule 23 (func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol .)
     MAIN            reduce using rule 23 (func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol .)
+
+
+state 165
+
+    (71) condition -> IF opening_par expression closing_par gotof body check_else last_goto .
+
+    closing_anglbrack reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    identifier      reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    IF              reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    DO              reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    PRINT           reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+
+
+state 166
+
+    (76) last_goto -> semicol .
+
+    closing_anglbrack reduce using rule 76 (last_goto -> semicol .)
+    identifier      reduce using rule 76 (last_goto -> semicol .)
+    IF              reduce using rule 76 (last_goto -> semicol .)
+    DO              reduce using rule 76 (last_goto -> semicol .)
+    PRINT           reduce using rule 76 (last_goto -> semicol .)
 
 WARNING: 
 WARNING: Conflicts:

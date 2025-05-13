@@ -1,5 +1,6 @@
 from lexer import tokens, lexer, input_program
 from semantic_cube import semantic_cube
+from semantic_structures import objects
 import ply.yacc as yacc
 
 start = 'programa'
@@ -8,18 +9,9 @@ current_program = 'program'
 function_directory = {}
 scope_stack=[]
 
-operator_stack = []
-operand_stack = []
-
 syntax_error = 0
 error_list = []
 
-class objects:
-    t_count = 0
-    quad_list = []
-    def __init__(self):
-        self.t_count = 0
-        self.quad_list = []
 
 Ds = objects()
 
@@ -207,11 +199,7 @@ def p_statement_print(t):
 # ASSIGN   ::= 'id' '=' (EXPRESSION | 'cte_string' ) ';'
 def p_assign(t):
     'assign : identifier op_assign expression semicol'
-    last, last_type, is_valid = operand_stack.pop()
-    if(scope_stack[-1][t[1]]):
-        scope_stack[-1][t[1]]["is_Null"] = False
-        result = ('=', last, None, t[1])
-        print(result)
+    Ds.add_assignation(t[1], scope_stack)
 
 def p_assign_string(t):
     'assign : identifier op_assign const_string semicol'
@@ -227,129 +215,112 @@ def p_assign_error(t):
 # EXPRESSION ::= EXP ( ( '>' | '<' | '>=' | '<=' | '!=' | '==' ) EXP )?
 def p_expression(t):
     'expression : exp'
-    t[0] = t[1]
+    
 
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
-    # t[0] = t[1] < t[3]
+    Ds.add_to_quad_list("<")
 
 def p_expression_more(t):
     'expression : exp op_more_than exp'
-    # t[0] = t[1] > t[3]
+    Ds.add_to_quad_list(">")
 
 def p_expression_less_equal(t):
     'expression : exp op_lessthan_equal exp'
-    t[0] = t[1] <= t[3]
+    Ds.add_to_quad_list("<=")
 
 def p_expression_more_equal(t):
     'expression : exp op_morethan_equal exp'
-    t[0] = t[1] >= t[3]
+    Ds.add_to_quad_list(">=")
 
 def p_expression_equals(t):
     'expression : exp op_equals exp'
-    t[0] = t[1] == t[3]
+    Ds.add_to_quad_list("==")
 
 def p_expression_not_equal(t):
     'expression : exp op_not_equal exp'
-    t[0] = t[1] != t[3]
+    Ds.add_to_quad_list("!=")
 
 #EXP      ::= TERM ( ( '+' | '-' ) TERM )*
 def p_exp_suma(t):
     'exp : exp op_plus term'
-    # t[0] = t[1] + t[3]
-    right, r_type, r_valid = operand_stack.pop()
-    left, l_type, l_valid= operand_stack.pop()
-    result = semantic_cube[l_type]["+"][r_type]
-    if (result != "error"):
-        Ds.t_count +=1
-        
-        temp = "t_" + str(Ds.t_count)
-        operand_stack.append((temp, result, 1))
-        print("+ ", left, right, temp)
-    else:
-        print("Invalid sum operation between " , l_type," and " ,r_type)
+    Ds.add_to_quad_list("+")
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
     # t[0] = t[1] - t[3]
+    Ds.add_to_quad_list("-")
 
 def p_exp_term(t):
     'exp : term'
-    t[0] = t[1]
+    
 
 #TERM     ::= FACTOR ( ( '*' | '/' ) FACTOR )*
 def p_term_mult(t):
     'term : term op_mult factor'
-    # t[0] = t[1] * t[3]
+    Ds.add_to_quad_list("*")
 
 def p_term_div(t):
     'term : term op_div factor'
-    t[0] = t[1] / t[3]
+    Ds.add_to_quad_list("/")
 
 def p_term_factor(t):
     'term : factor'
-    t[0] = t[1]
+    
 
 # FACTOR   ::= '(' EXPRESSION ')' | ( '+' | '-' )? ( 'id' | CTE )
 
 def p_factor_expression(t):
     'factor : opening_par expression closing_par'
-    t[0] = t[2]
 
 def p_factor_plus_id(t):
     'factor : op_plus identifier'
-    # try:
-    #     t[0] = scope_stack[-1][t[2]]
-    # except LookupError:
-    #     #print("undefined variable '%s'" % t[2]) 
-    #     t[0] = 0
+    name = t[2]
+    var = name in scope_stack[-1]
+    if (var and scope_stack[-1][name]['is_null'] == False):
+        Ds.add_to_operand_stack(name, scope_stack[-1][name]["type"], 1)
+    else:
+        Ds.add_to_operand_stack(name, 'error', 0)
+    Ds.add_single_to_quad("+")
 
 def p_factor_plus_cte(t):
     'factor : op_plus cte'
-    t[0] = t[2]
+    Ds.add_single_to_quad("+")
 
 def p_factor_minus_id(t):
     'factor : op_minus identifier'
-    try:
-        t[0] = -scope_stack[-1][t[1]]
-    except LookupError:
-        #print("undefined variable '%s'" % t[2]) 
-        t[0] = 0
+    name = t[2]
+    var = name in scope_stack[-1]
+    if (var and scope_stack[-1][name]['is_null'] == False):
+        Ds.add_to_operand_stack(name, scope_stack[-1][name]["type"], 1)
+    else:
+        Ds.add_to_operand_stack(name, 'error', 0)
+    Ds.add_single_to_quad("-")
 
 def p_factor_minus_cte(t):
     'factor : op_minus cte'
-    t[0] = - t[2]
+    Ds.add_single_to_quad("-")
 
 def p_factor_id(t):
     'factor : identifier'
     name = t[1]
-    var = scope_stack[-1].get(name)
-    if (var):
-        operand_stack.append((name, var["type"], 1))
+    var = name in scope_stack[-1]
+    if (var and scope_stack[-1][name]['is_null'] == False):
+        Ds.add_to_operand_stack(name, scope_stack[-1][name]["type"], 1)
     else:
-        print("Inexistent identifier ", name, " in scope")
-        operand_stack.append((name, "None", 0))
-
-
+        Ds.add_to_operand_stack(name, 'error', 0)
 
 def p_factor_cte(t):
     'factor : cte'
-    t[0] = t[1]
-
 
 #CTE      ::= 'cte_int' | 'cte_float'
 def p_cte_int(t):
     'cte : const_int'
-    value = t[1]
-    operand_stack.append((t[1], "int", 1))
-    t[0] = value
+    Ds.add_to_operand_stack(t[1], "int", 1)
     
-
 def p_cte_float(t):
     'cte : const_float'
-    value = t[1]
-    operand_stack.append((t[1], "float", 1))
-    t[0] = value 
+    Ds.add_to_operand_stack(t[1], "float", 1)
 
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
@@ -419,15 +390,29 @@ def p_cycle_error(t):
 #CONDITION ::= 'if' '(' EXPRESSION ')' BODY ( 'else' BODY )? ';'
 
 def p_condition(t):
-    'condition : IF opening_par expression closing_par body check_else semicol'
-    if t[5] and t[6]:  # hay un else
-        t[0] = ('if_else', t[3], t[5], t[6])
-    else:
-        t[0] = ('if', t[3], t[5])
+    'condition : IF opening_par expression closing_par gotof body check_else last_goto'
+
+def p_gotof(t):
+    'gotof :'
+    Ds.add_gotof()
+
+def p_gotof_dummy(t):
+    'gotof_dummy :'
 
 def p_check_else(t):
-    'check_else : ELSE body' 
-    t[0] = t[2]
+    'check_else : else_goto body' 
+    
+#revisar con dummy y errores sintácticos
+def p_else_goto(t):
+    'else_goto : ELSE '
+    Ds.add_goto(t.lineno(1))
+
+def p_last_goto(t):
+    'last_goto : semicol'
+    Ds.end_goto(t.lineno(1))
+
+def p_last_goto_dummy(t):
+    'last_goto_dummy : semicol'
 
 def p_check_else_empty(t):
     'check_else : '
@@ -435,10 +420,11 @@ def p_check_else_empty(t):
 
 #Error de expresión
 def p_condition_error(t):
-    'condition : IF opening_par error closing_par body check_else semicol'
+    'condition : IF opening_par error gotof_dummy body check_else last_goto_dummy'
     global error_list
     error_list.append("At If creation: Bad expression")
     t[0] = []
+
 
 #Error general
 def p_error(t):
@@ -464,7 +450,13 @@ if syntax_error > 0:
     if (syntax_error != len (error_list)):
         print("Unknown error also detected that stopped analysis abruptly")
 else:
-    print("\nNO ERRORS FOUND ")
+    print("\nNO SYNTAX ERRORS FOUND ")
 
-print(operand_stack)
-#print(function_directory)
+print("\n--SEMANTICAL ANALYSIS--")
+print("-Quadruples-")
+print("vienen en formato operador, left, right y resultado")
+count = 1
+for quad in Ds.quad_list:
+    print(count, quad[0], quad[1], quad[2], quad[3])
+    count+=1
+
