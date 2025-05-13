@@ -1,18 +1,11 @@
 program proquacks;
-
- 
-
 var 
-
         A, B, C, D : int ; F : string;
 main {
     A = 7;
     B = 1;
-
     C = B;
     D = 10;
-
- 
 
     if (A + B > D)
     {
@@ -31,8 +24,4 @@ main {
         A = B + C;
     };
     D = B + A * C;
-
-    if(3 != 4){
-        A = C;
-    };
 } end

@@ -455,11 +455,17 @@ else:
 
 print("\n--SEMANTICAL ANALYSIS--")
 print("-Quadruples-")
-print("Number/Operator/Left/Right/result_type")
-count = 1
-for quad in Ds.quad_list:
-    print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
-    count+=1
+
+if(len(Ds.errors_found) == 0):
+    print("Number/Operator/Left/Right/result/result_type")
+    count = 1
+    for quad in Ds.quad_list:
+        print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
+        count+=1
+else:
+    print("--Errors Found--")
+    for x in Ds.errors_found:
+        print (x)
 
 print("-symbol table-")
 print("variable/scope/type/line_declared/is_null")

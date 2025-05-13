@@ -7,6 +7,9 @@ class objects:
     operand_stack = []
     # (gotof, arg1, None, lineno )
     pending_jumps = []
+    #por si encontramos un error
+    errors_found = []
+
     def __init__(self):
         self.t_count = 0
         self.quad_list = []
@@ -31,13 +34,16 @@ class objects:
             self.operand_stack.append((temp, result, 1))
             self.quad_list.append((operator, left, right, temp, result))
         else:
-            print("Invalid operation between " , l_type," and " ,r_type)
+            #print("Invalid operation between " , l_type," and " ,r_type)
+            error = "Invalid operation between " + str(l_type) + " and " + str(r_type)
+            self.errors_found.append(error)
             self.operand_stack.append(("error_token", "error", 0))
     
     
     def add_assignation(self, name, scope_stack):
         last, last_type, is_valid = self.operand_stack.pop()
-        if(scope_stack[-1][name] and is_valid):
+        
+        if( name in scope_stack[-1] and is_valid):
             #variable existe, verificamos que sea válida la asignación
             var = scope_stack[-1][name]
             if (last_type != 'bool' and semantic_cube[var['type']]['='][last_type] != 'error'):
@@ -45,9 +51,13 @@ class objects:
                 result = ('=', last, None, name, semantic_cube[var['type']]['='][last_type])
                 self.quad_list.append(result)
             else:
-                print("Invalid assignment, ", var['type'], "cannot be", last_type)
+                #print("Invalid assignment, ", var['type'], "cannot be", last_type)
+                error = "Invalid assignment, " + str(var['type']) + " cannot be "+ str(last_type)
+                self.errors_found.append(error)
         else:
-            print("Invalid assignment to variable ", name, ". It does not exist or expression is not valid")
+            #print("Invalid assignment to variable ", name, ". It does not exist or expression is not valid")
+            error = "Invalid assignment to variable " + str(name) + ". It does not exist or expression is not valid"
+            self.errors_found.append(error)
 
     def add_single_to_quad(self, operator):
         last, last_type, is_valid = self.operand_stack.pop()
@@ -58,7 +68,9 @@ class objects:
             self.operand_stack.append((temp, result, 1))
             self.quad_list.append((operator, last, None, temp, result))
         else:
-            print("Invalid operation to ", last_type)
+            #print("Invalid operation to ", last_type)
+            error = "Invalid operation to " +  str(last_type)
+            self.errors_found.append(error)
             self.operand_stack.append(("error_token", "error", 0))
 
     def add_gotof(self):
