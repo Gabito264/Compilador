@@ -75,13 +75,13 @@ def p_vars_empty(t):
 
 def p_definition(t):
     'var_definition : id_list twopoint type semicol var_definition'
-    declare_vars_in_scope(t[1], t[3], t.lineno(3))
+    declare_vars_in_scope(t[1], t[3], t.lineno(2))
     t[0] = [('var_decl', t[1], t[3])] + t[5]
     
 
 def p_definition_once(t):
     'var_definition : id_list twopoint type semicol'
-    declare_vars_in_scope(t[1], t[3], t.lineno(3))
+    declare_vars_in_scope(t[1], t[3], t.lineno(2))
     t[0] = [('var_decl', t[1], t[3])]
 
 def p_id_list(t):
@@ -199,12 +199,13 @@ def p_statement_print(t):
 # ASSIGN   ::= 'id' '=' (EXPRESSION | 'cte_string' ) ';'
 def p_assign(t):
     'assign : identifier op_assign expression semicol'
+
     Ds.add_assignation(t[1], scope_stack)
 
 def p_assign_string(t):
     'assign : identifier op_assign const_string semicol'
-    # names[t[1]] = t[3]
-    # t[0] = names[t[1]]
+    Ds.add_to_operand_stack(t[3], 'string', 1)
+    Ds.add_assignation(t[1], scope_stack)
 
 #error en asignación normal, expresiones inválidas
 def p_assign_error(t):
@@ -405,11 +406,11 @@ def p_check_else(t):
 #revisar con dummy y errores sintácticos
 def p_else_goto(t):
     'else_goto : ELSE '
-    Ds.add_goto(t.lineno(1))
+    Ds.add_goto()
 
 def p_last_goto(t):
     'last_goto : semicol'
-    Ds.end_goto(t.lineno(1))
+    Ds.end_goto()
 
 def p_last_goto_dummy(t):
     'last_goto_dummy : semicol'
@@ -454,9 +455,18 @@ else:
 
 print("\n--SEMANTICAL ANALYSIS--")
 print("-Quadruples-")
-print("vienen en formato operador, left, right y resultado")
+print("Number/Operator/Left/Right/result_type")
 count = 1
 for quad in Ds.quad_list:
-    print(count, quad[0], quad[1], quad[2], quad[3])
+    print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
     count+=1
 
+print("-symbol table-")
+print("variable/scope/type/line_declared/is_null")
+for x in function_directory:
+    for y in function_directory[x]['var_table']:
+        print(y, function_directory[x]['var_table'][y]['scope'], 
+              function_directory[x]['var_table'][y]['type'],
+              function_directory[x]['var_table'][y]['value'],
+              function_directory[x]['var_table'][y]['declared_line'],
+              function_directory[x]['var_table'][y]['is_null'])

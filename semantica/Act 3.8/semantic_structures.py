@@ -29,7 +29,7 @@ class objects:
             
             temp = "t_" + str(self.t_count)
             self.operand_stack.append((temp, result, 1))
-            self.quad_list.append((operator, left, right, temp))
+            self.quad_list.append((operator, left, right, temp, result))
         else:
             print("Invalid operation between " , l_type," and " ,r_type)
             self.operand_stack.append(("error_token", "error", 0))
@@ -42,7 +42,7 @@ class objects:
             var = scope_stack[-1][name]
             if (last_type != 'bool' and semantic_cube[var['type']]['='][last_type] != 'error'):
                 scope_stack[-1][name]['is_null'] = False
-                result = ('=', last, None, name)
+                result = ('=', last, None, name, semantic_cube[var['type']]['='][last_type])
                 self.quad_list.append(result)
             else:
                 print("Invalid assignment, ", var['type'], "cannot be", last_type)
@@ -51,12 +51,12 @@ class objects:
 
     def add_single_to_quad(self, operator):
         last, last_type, is_valid = self.operand_stack.pop()
-        result = semantic_cube[last_type][operator]['']
+        result = semantic_cube[''][operator][last_type]
         if(is_valid and result != 'error'):
             self.t_count+=1
             temp = "t_" + str(self.t_count)
             self.operand_stack.append((temp, result, 1))
-            self.quad_list.append((operator, last, None, temp))
+            self.quad_list.append((operator, last, None, temp, result))
         else:
             print("Invalid operation to ", last_type)
             self.operand_stack.append(("error_token", "error", 0))
@@ -64,25 +64,26 @@ class objects:
     def add_gotof(self):
 
         last, last_type, is_valid = self.operand_stack.pop()
-        temp = ['gotof', last, None, 0]
+        temp = ['gotof', last, None, 0, None]
         index = len(self.quad_list)
         self.quad_list.append(temp)
         self.pending_jumps.append(index)
     
     #else
-    def add_goto(self, lineno):
-        index = self.pending_jumps.pop()
-        temp = self.quad_list[index]
-        self.quad_list[index] = (temp[0], temp[1], temp[2], lineno+1)
+    def add_goto(self):
+        gotof_index = self.pending_jumps.pop()
+        gottof = self.quad_list[gotof_index]
 
-        temp = ['goto', None, None, 0]
+        temp = ['goto', None, None, 0, None]
         index = len(self.quad_list)
         self.quad_list.append(temp)
         self.pending_jumps.append(index)
+        
+        self.quad_list[gotof_index] = (gottof[0], gottof[1], gottof[2], len(self.quad_list)+1, None)
 
     #cerramos último índice que había
-    def end_goto(self, lineno):
+    def end_goto(self):
         index = self.pending_jumps.pop()
         temp = self.quad_list[index]
-        self.quad_list[index] = (temp[0], temp[1], temp[2], lineno+1)
+        self.quad_list[index] = (temp[0], temp[1], temp[2], len(self.quad_list)+1, None)
         
