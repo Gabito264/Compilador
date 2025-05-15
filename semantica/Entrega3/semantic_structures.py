@@ -10,17 +10,24 @@ class objects:
     #por si encontramos un error
     errors_found = []
 
+    cycle_index_list = []
+
     def __init__(self):
         self.t_count = 0
         self.quad_list = []
         self.operand_stack = []
         self.pending_jumps = []
 
+    #checar si el stack de operandos tiene una entrada válida
+    def checkOperandStack(self):
+        if len(self.operand_stack > 0):
+            return True
+        else:
+            return False
     #tomamos el nombre, el tipo, y si el valor no es nulo o si sí existe
     def add_to_operand_stack(self, name, type, not_null):
         self.operand_stack.append((name, type, not_null))
         # print(self.operand_stack)
-
 
     #Cuando entramos en una gramática con sólo expresión queda un leftover
     def add_to_quad_list(self, operator):
@@ -73,13 +80,21 @@ class objects:
             self.errors_found.append(error)
             self.operand_stack.append(("error_token", "error", 0))
 
+    #if
     def add_gotof(self):
-
         last, last_type, is_valid = self.operand_stack.pop()
-        temp = ['gotof', last, None, 0, None]
-        index = len(self.quad_list)
-        self.quad_list.append(temp)
-        self.pending_jumps.append(index)
+        if (last_type == 'bool'):
+            temp = ['gotof', last, None, 0, None]
+            index = len(self.quad_list)
+            self.quad_list.append(temp)
+            self.pending_jumps.append(index)
+        else:
+            error = "Condition is not a boolean condition"
+            self.errors_found.append(error)
+            temp = ['gotof', last, None, 0, None]
+            index = len(self.quad_list)
+            self.quad_list.append(temp)
+            self.pending_jumps.append(index)
     
     #else
     def add_goto(self):
@@ -99,3 +114,24 @@ class objects:
         temp = self.quad_list[index]
         self.quad_list[index] = (temp[0], temp[1], temp[2], len(self.quad_list)+1, None)
         
+    def addPrint(self):
+        if (self.checkOperandStack):
+            last, last_type, is_valid = self.operand_stack.pop()
+            if is_valid:
+                self.quad_list.append(('print', last, None, None, last_type))
+    
+    def start_cycle(self):
+        self.cycle_index_list.append(len(self.quad_list)+1)
+
+    def add_cycle(self):
+        if (self.checkOperandStack):
+            last, last_type, is_valid = self.operand_stack.pop()
+            index = self.cycle_index_list.pop()
+            if last_type == 'bool':
+                self.quad_list.append(('gotoCycle', last, None, index, last_type))
+            else:
+                error = "Condition does not give a boolean result in cycle"
+                self.errors_found.append(error)
+
+
+#preguntar sobre como reaccionar ante errores generales ahora sí

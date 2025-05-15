@@ -75,25 +75,29 @@ Rule 65    print_args -> print_arg
 Rule 66    print_arg -> expression
 Rule 67    print_arg -> const_string
 Rule 68    print_statement -> PRINT opening_par error closing_par semicol
-Rule 69    cycle -> DO body WHILE opening_par expression closing_par semicol
-Rule 70    cycle -> DO body WHILE opening_par error closing_par semicol
-Rule 71    condition -> IF opening_par expression closing_par gotof body check_else last_goto
-Rule 72    gotof -> <empty>
-Rule 73    gotof_dummy -> <empty>
-Rule 74    check_else -> else_goto body
-Rule 75    else_goto -> ELSE
-Rule 76    last_goto -> semicol
-Rule 77    last_goto_dummy -> semicol
-Rule 78    check_else -> <empty>
-Rule 79    condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy
+Rule 69    cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol
+Rule 70    start_cycle -> <empty>
+Rule 71    start_cycle_dummy -> <empty>
+Rule 72    end_cycle -> <empty>
+Rule 73    end_cycle_dummy -> <empty>
+Rule 74    cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol
+Rule 75    condition -> IF opening_par expression closing_par gotof body check_else last_goto
+Rule 76    gotof -> <empty>
+Rule 77    gotof_dummy -> <empty>
+Rule 78    check_else -> else_goto body
+Rule 79    else_goto -> ELSE
+Rule 80    last_goto -> semicol
+Rule 81    last_goto_dummy -> semicol
+Rule 82    check_else -> <empty>
+Rule 83    condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy
 
 Terminals, with rules where they appear
 
-DO                   : 69 70
-ELSE                 : 75
+DO                   : 69 74
+ELSE                 : 79
 END                  : 1 4
 FLOAT                : 14
-IF                   : 71 79
+IF                   : 75 83
 INTEGER              : 13
 MAIN                 : 1 4
 PRINT                : 63 68
@@ -101,16 +105,16 @@ PROGRAM              : 1 4
 STRING               : 15
 VAR                  : 5
 VOID                 : 18 23
-WHILE                : 69 70
+WHILE                : 69 74
 closing_anglbrack    : 24
 closing_brack        : 18 23
-closing_par          : 18 23 49 58 62 63 68 69 70 71
+closing_par          : 18 23 49 58 62 63 68 69 74 75
 comma                : 9 19 59 64
 comment              : 
 const_float          : 57
 const_int            : 56
 const_string         : 34 67
-error                : 4 11 12 23 35 62 68 70 79
+error                : 4 11 12 23 35 62 68 74 83
 identifier           : 1 9 10 18 22 23 33 34 35 50 52 54 58 62
 op_assign            : 33 34 35
 op_div               : 47
@@ -125,39 +129,43 @@ op_not_equal         : 42
 op_plus              : 43 50 51
 opening_anglbrack    : 24
 opening_brack        : 18 23
-opening_par          : 18 23 49 58 62 63 68 69 70 71 79
-semicol              : 1 4 7 8 11 12 18 23 33 34 35 58 62 63 68 69 70 76 77
+opening_par          : 18 23 49 58 62 63 68 69 74 75 83
+semicol              : 1 4 7 8 11 12 18 23 33 34 35 58 62 63 68 69 74 80 81
 twopoint             : 7 8 11 12 22
 
 Nonterminals, with rules where they appear
 
 arguments            : 58 59
 assign               : 28
-body                 : 1 4 18 23 69 70 71 74 79
-check_else           : 71 79
+body                 : 1 4 18 23 69 74 75 78 83
+check_else           : 75 83
 condition            : 29
 create_program       : 1
 cte                  : 51 53 55
 cycle                : 30
 elim_program         : 1
-else_goto            : 74
+else_goto            : 78
+end_cycle            : 69
+end_cycle_dummy      : 74
 exp                  : 36 37 37 38 38 39 39 40 40 41 41 42 42 43 44
-expression           : 33 49 59 60 66 69 71
+expression           : 33 49 59 60 66 69 75
 f_call               : 31
 factor               : 46 47 48
 func                 : 16
 funcs                : 1 4 16
-gotof                : 71
-gotof_dummy          : 79
+gotof                : 75
+gotof_dummy          : 83
 id_list              : 7 8 9
-last_goto            : 71
-last_goto_dummy      : 79
+last_goto            : 75
+last_goto_dummy      : 83
 param                : 19 20
 param_list           : 18 19
 print_arg            : 64 65
 print_args           : 63 64
 print_statement      : 32
 programa             : 0
+start_cycle          : 69
+start_cycle_dummy    : 74
 statement            : 25 26
 statements           : 24 25
 term                 : 43 44 45 46 47
@@ -445,10 +453,10 @@ state 27
     (33) assign -> . identifier op_assign expression semicol
     (34) assign -> . identifier op_assign const_string semicol
     (35) assign -> . identifier op_assign error semicol
-    (71) condition -> . IF opening_par expression closing_par gotof body check_else last_goto
-    (79) condition -> . IF opening_par error gotof_dummy body check_else last_goto_dummy
-    (69) cycle -> . DO body WHILE opening_par expression closing_par semicol
-    (70) cycle -> . DO body WHILE opening_par error closing_par semicol
+    (75) condition -> . IF opening_par expression closing_par gotof body check_else last_goto
+    (83) condition -> . IF opening_par error gotof_dummy body check_else last_goto_dummy
+    (69) cycle -> . DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol
+    (74) cycle -> . DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol
     (58) f_call -> . identifier opening_par arguments closing_par semicol
     (62) f_call -> . identifier opening_par error closing_par semicol
     (63) print_statement -> . PRINT opening_par print_args closing_par semicol
@@ -570,10 +578,10 @@ state 37
     (33) assign -> . identifier op_assign expression semicol
     (34) assign -> . identifier op_assign const_string semicol
     (35) assign -> . identifier op_assign error semicol
-    (71) condition -> . IF opening_par expression closing_par gotof body check_else last_goto
-    (79) condition -> . IF opening_par error gotof_dummy body check_else last_goto_dummy
-    (69) cycle -> . DO body WHILE opening_par expression closing_par semicol
-    (70) cycle -> . DO body WHILE opening_par error closing_par semicol
+    (75) condition -> . IF opening_par expression closing_par gotof body check_else last_goto
+    (83) condition -> . IF opening_par error gotof_dummy body check_else last_goto_dummy
+    (69) cycle -> . DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol
+    (74) cycle -> . DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol
     (58) f_call -> . identifier opening_par arguments closing_par semicol
     (62) f_call -> . identifier opening_par error closing_par semicol
     (63) print_statement -> . PRINT opening_par print_args closing_par semicol
@@ -672,35 +680,40 @@ state 44
 
 state 45
 
-    (71) condition -> IF . opening_par expression closing_par gotof body check_else last_goto
-    (79) condition -> IF . opening_par error gotof_dummy body check_else last_goto_dummy
+    (75) condition -> IF . opening_par expression closing_par gotof body check_else last_goto
+    (83) condition -> IF . opening_par error gotof_dummy body check_else last_goto_dummy
 
     opening_par     shift and go to state 59
 
 
 state 46
 
-    (69) cycle -> DO . body WHILE opening_par expression closing_par semicol
-    (70) cycle -> DO . body WHILE opening_par error closing_par semicol
-    (24) body -> . opening_anglbrack statements closing_anglbrack
+    (69) cycle -> DO . start_cycle body WHILE opening_par expression closing_par end_cycle semicol
+    (74) cycle -> DO . start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol
+    (70) start_cycle -> .
+    (71) start_cycle_dummy -> .
 
-    opening_anglbrack shift and go to state 27
+  ! reduce/reduce conflict for opening_anglbrack resolved using rule 70 (start_cycle -> .)
+    opening_anglbrack reduce using rule 70 (start_cycle -> .)
 
-    body                           shift and go to state 60
+  ! opening_anglbrack [ reduce using rule 71 (start_cycle_dummy -> .) ]
+
+    start_cycle                    shift and go to state 60
+    start_cycle_dummy              shift and go to state 61
 
 state 47
 
     (63) print_statement -> PRINT . opening_par print_args closing_par semicol
     (68) print_statement -> PRINT . opening_par error closing_par semicol
 
-    opening_par     shift and go to state 61
+    opening_par     shift and go to state 62
 
 
 state 48
 
     (22) param -> identifier . twopoint type
 
-    twopoint        shift and go to state 62
+    twopoint        shift and go to state 63
 
 
 state 49
@@ -708,15 +721,15 @@ state 49
     (18) func -> VOID identifier opening_par param_list . closing_par opening_brack vars body closing_brack semicol
     (19) param_list -> param_list . comma param
 
-    closing_par     shift and go to state 63
-    comma           shift and go to state 64
+    closing_par     shift and go to state 64
+    comma           shift and go to state 65
 
 
 state 50
 
     (23) func -> VOID identifier opening_par error . closing_par opening_brack vars body closing_brack semicol
 
-    closing_par     shift and go to state 65
+    closing_par     shift and go to state 66
 
 
 state 51
@@ -745,7 +758,7 @@ state 52
     identifier      shift and go to state 17
 
     id_list                        shift and go to state 15
-    var_definition                 shift and go to state 66
+    var_definition                 shift and go to state 67
 
 state 53
 
@@ -764,7 +777,7 @@ state 53
     error           shift and go to state 16
     identifier      shift and go to state 17
 
-    var_definition                 shift and go to state 67
+    var_definition                 shift and go to state 68
     id_list                        shift and go to state 15
 
 state 54
@@ -774,7 +787,7 @@ state 54
 
     $end            reduce using rule 3 (elim_program -> .)
 
-    elim_program                   shift and go to state 68
+    elim_program                   shift and go to state 69
 
 state 55
 
@@ -826,20 +839,20 @@ state 57
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    const_string    shift and go to state 71
-    error           shift and go to state 72
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    const_string    shift and go to state 72
+    error           shift and go to state 73
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    expression                     shift and go to state 70
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    expression                     shift and go to state 71
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
 state 58
 
@@ -871,27 +884,27 @@ state 58
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    error           shift and go to state 83
+    error           shift and go to state 84
     closing_par     reduce using rule 61 (arguments -> .)
     comma           reduce using rule 61 (arguments -> .)
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    arguments                      shift and go to state 82
-    expression                     shift and go to state 84
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    arguments                      shift and go to state 83
+    expression                     shift and go to state 85
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
 state 59
 
-    (71) condition -> IF opening_par . expression closing_par gotof body check_else last_goto
-    (79) condition -> IF opening_par . error gotof_dummy body check_else last_goto_dummy
+    (75) condition -> IF opening_par . expression closing_par gotof body check_else last_goto
+    (83) condition -> IF opening_par . error gotof_dummy body check_else last_goto_dummy
     (36) expression -> . exp
     (37) expression -> . exp op_lesser_than exp
     (38) expression -> . exp op_more_than exp
@@ -915,29 +928,39 @@ state 59
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    error           shift and go to state 86
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    error           shift and go to state 87
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    expression                     shift and go to state 85
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    expression                     shift and go to state 86
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
 state 60
 
-    (69) cycle -> DO body . WHILE opening_par expression closing_par semicol
-    (70) cycle -> DO body . WHILE opening_par error closing_par semicol
+    (69) cycle -> DO start_cycle . body WHILE opening_par expression closing_par end_cycle semicol
+    (24) body -> . opening_anglbrack statements closing_anglbrack
 
-    WHILE           shift and go to state 87
+    opening_anglbrack shift and go to state 27
 
+    body                           shift and go to state 88
 
 state 61
+
+    (74) cycle -> DO start_cycle_dummy . body WHILE opening_par error closing_par end_cycle_dummy semicol
+    (24) body -> . opening_anglbrack statements closing_anglbrack
+
+    opening_anglbrack shift and go to state 27
+
+    body                           shift and go to state 89
+
+state 62
 
     (63) print_statement -> PRINT opening_par . print_args closing_par semicol
     (68) print_statement -> PRINT opening_par . error closing_par semicol
@@ -968,24 +991,24 @@ state 61
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    error           shift and go to state 89
-    const_string    shift and go to state 92
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    error           shift and go to state 91
+    const_string    shift and go to state 94
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    print_args                     shift and go to state 88
-    print_arg                      shift and go to state 90
-    expression                     shift and go to state 91
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    print_args                     shift and go to state 90
+    print_arg                      shift and go to state 92
+    expression                     shift and go to state 93
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 62
+state 63
 
     (22) param -> identifier twopoint . type
     (13) type -> . INTEGER
@@ -996,32 +1019,32 @@ state 62
     FLOAT           shift and go to state 31
     STRING          shift and go to state 32
 
-    type                           shift and go to state 93
+    type                           shift and go to state 95
 
-state 63
+state 64
 
     (18) func -> VOID identifier opening_par param_list closing_par . opening_brack vars body closing_brack semicol
 
-    opening_brack   shift and go to state 94
+    opening_brack   shift and go to state 96
 
 
-state 64
+state 65
 
     (19) param_list -> param_list comma . param
     (22) param -> . identifier twopoint type
 
     identifier      shift and go to state 48
 
-    param                          shift and go to state 95
+    param                          shift and go to state 97
 
-state 65
+state 66
 
     (23) func -> VOID identifier opening_par error closing_par . opening_brack vars body closing_brack semicol
 
-    opening_brack   shift and go to state 96
+    opening_brack   shift and go to state 98
 
 
-state 66
+state 67
 
     (7) var_definition -> id_list twopoint type semicol var_definition .
 
@@ -1030,7 +1053,7 @@ state 66
     opening_anglbrack reduce using rule 7 (var_definition -> id_list twopoint type semicol var_definition .)
 
 
-state 67
+state 68
 
     (11) var_definition -> error twopoint type semicol var_definition .
 
@@ -1039,14 +1062,14 @@ state 67
     opening_anglbrack reduce using rule 11 (var_definition -> error twopoint type semicol var_definition .)
 
 
-state 68
+state 69
 
     (1) programa -> PROGRAM identifier create_program semicol vars funcs MAIN body END elim_program .
 
     $end            reduce using rule 1 (programa -> PROGRAM identifier create_program semicol vars funcs MAIN body END elim_program .)
 
 
-state 69
+state 70
 
     (54) factor -> identifier .
 
@@ -1065,28 +1088,28 @@ state 69
     comma           reduce using rule 54 (factor -> identifier .)
 
 
-state 70
-
-    (33) assign -> identifier op_assign expression . semicol
-
-    semicol         shift and go to state 97
-
-
 state 71
 
-    (34) assign -> identifier op_assign const_string . semicol
-
-    semicol         shift and go to state 98
-
-
-state 72
-
-    (35) assign -> identifier op_assign error . semicol
+    (33) assign -> identifier op_assign expression . semicol
 
     semicol         shift and go to state 99
 
 
+state 72
+
+    (34) assign -> identifier op_assign const_string . semicol
+
+    semicol         shift and go to state 100
+
+
 state 73
+
+    (35) assign -> identifier op_assign error . semicol
+
+    semicol         shift and go to state 101
+
+
+state 74
 
     (36) expression -> exp .
     (37) expression -> exp . op_lesser_than exp
@@ -1101,30 +1124,30 @@ state 73
     semicol         reduce using rule 36 (expression -> exp .)
     closing_par     reduce using rule 36 (expression -> exp .)
     comma           reduce using rule 36 (expression -> exp .)
-    op_lesser_than  shift and go to state 100
-    op_more_than    shift and go to state 101
-    op_lessthan_equal shift and go to state 102
-    op_morethan_equal shift and go to state 103
-    op_equals       shift and go to state 104
-    op_not_equal    shift and go to state 105
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_lesser_than  shift and go to state 102
+    op_more_than    shift and go to state 103
+    op_lessthan_equal shift and go to state 104
+    op_morethan_equal shift and go to state 105
+    op_equals       shift and go to state 106
+    op_not_equal    shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 74
+state 75
 
     (50) factor -> op_plus . identifier
     (51) factor -> op_plus . cte
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    identifier      shift and go to state 108
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    identifier      shift and go to state 110
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    cte                            shift and go to state 109
+    cte                            shift and go to state 111
 
-state 75
+state 76
 
     (45) exp -> term .
     (46) term -> term . op_mult factor
@@ -1141,24 +1164,24 @@ state 75
     semicol         reduce using rule 45 (exp -> term .)
     closing_par     reduce using rule 45 (exp -> term .)
     comma           reduce using rule 45 (exp -> term .)
-    op_mult         shift and go to state 110
-    op_div          shift and go to state 111
+    op_mult         shift and go to state 112
+    op_div          shift and go to state 113
 
 
-state 76
+state 77
 
     (52) factor -> op_minus . identifier
     (53) factor -> op_minus . cte
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    identifier      shift and go to state 112
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    identifier      shift and go to state 114
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    cte                            shift and go to state 113
+    cte                            shift and go to state 115
 
-state 77
+state 78
 
     (48) term -> factor .
 
@@ -1177,7 +1200,7 @@ state 77
     comma           reduce using rule 48 (term -> factor .)
 
 
-state 78
+state 79
 
     (49) factor -> opening_par . expression closing_par
     (36) expression -> . exp
@@ -1203,20 +1226,20 @@ state 78
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    expression                     shift and go to state 114
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    expression                     shift and go to state 116
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 79
+state 80
 
     (55) factor -> cte .
 
@@ -1235,7 +1258,7 @@ state 79
     comma           reduce using rule 55 (factor -> cte .)
 
 
-state 80
+state 81
 
     (56) cte -> const_int .
 
@@ -1254,7 +1277,7 @@ state 80
     comma           reduce using rule 56 (cte -> const_int .)
 
 
-state 81
+state 82
 
     (57) cte -> const_float .
 
@@ -1273,23 +1296,23 @@ state 81
     comma           reduce using rule 57 (cte -> const_float .)
 
 
-state 82
+state 83
 
     (58) f_call -> identifier opening_par arguments . closing_par semicol
     (59) arguments -> arguments . comma expression
 
-    closing_par     shift and go to state 115
-    comma           shift and go to state 116
-
-
-state 83
-
-    (62) f_call -> identifier opening_par error . closing_par semicol
-
     closing_par     shift and go to state 117
+    comma           shift and go to state 118
 
 
 state 84
+
+    (62) f_call -> identifier opening_par error . closing_par semicol
+
+    closing_par     shift and go to state 119
+
+
+state 85
 
     (60) arguments -> expression .
 
@@ -1297,47 +1320,53 @@ state 84
     comma           reduce using rule 60 (arguments -> expression .)
 
 
-state 85
-
-    (71) condition -> IF opening_par expression . closing_par gotof body check_else last_goto
-
-    closing_par     shift and go to state 118
-
-
 state 86
 
-    (79) condition -> IF opening_par error . gotof_dummy body check_else last_goto_dummy
-    (73) gotof_dummy -> .
+    (75) condition -> IF opening_par expression . closing_par gotof body check_else last_goto
 
-    opening_anglbrack reduce using rule 73 (gotof_dummy -> .)
+    closing_par     shift and go to state 120
 
-    gotof_dummy                    shift and go to state 119
 
 state 87
 
-    (69) cycle -> DO body WHILE . opening_par expression closing_par semicol
-    (70) cycle -> DO body WHILE . opening_par error closing_par semicol
+    (83) condition -> IF opening_par error . gotof_dummy body check_else last_goto_dummy
+    (77) gotof_dummy -> .
 
-    opening_par     shift and go to state 120
+    opening_anglbrack reduce using rule 77 (gotof_dummy -> .)
 
+    gotof_dummy                    shift and go to state 121
 
 state 88
 
-    (63) print_statement -> PRINT opening_par print_args . closing_par semicol
-    (64) print_args -> print_args . comma print_arg
+    (69) cycle -> DO start_cycle body . WHILE opening_par expression closing_par end_cycle semicol
 
-    closing_par     shift and go to state 121
-    comma           shift and go to state 122
+    WHILE           shift and go to state 122
 
 
 state 89
 
-    (68) print_statement -> PRINT opening_par error . closing_par semicol
+    (74) cycle -> DO start_cycle_dummy body . WHILE opening_par error closing_par end_cycle_dummy semicol
 
-    closing_par     shift and go to state 123
+    WHILE           shift and go to state 123
 
 
 state 90
+
+    (63) print_statement -> PRINT opening_par print_args . closing_par semicol
+    (64) print_args -> print_args . comma print_arg
+
+    closing_par     shift and go to state 124
+    comma           shift and go to state 125
+
+
+state 91
+
+    (68) print_statement -> PRINT opening_par error . closing_par semicol
+
+    closing_par     shift and go to state 126
+
+
+state 92
 
     (65) print_args -> print_arg .
 
@@ -1345,7 +1374,7 @@ state 90
     comma           reduce using rule 65 (print_args -> print_arg .)
 
 
-state 91
+state 93
 
     (66) print_arg -> expression .
 
@@ -1353,7 +1382,7 @@ state 91
     comma           reduce using rule 66 (print_arg -> expression .)
 
 
-state 92
+state 94
 
     (67) print_arg -> const_string .
 
@@ -1361,7 +1390,7 @@ state 92
     comma           reduce using rule 67 (print_arg -> const_string .)
 
 
-state 93
+state 95
 
     (22) param -> identifier twopoint type .
 
@@ -1369,7 +1398,7 @@ state 93
     comma           reduce using rule 22 (param -> identifier twopoint type .)
 
 
-state 94
+state 96
 
     (18) func -> VOID identifier opening_par param_list closing_par opening_brack . vars body closing_brack semicol
     (5) vars -> . VAR var_definition
@@ -1378,9 +1407,9 @@ state 94
     VAR             shift and go to state 9
     opening_anglbrack reduce using rule 6 (vars -> .)
 
-    vars                           shift and go to state 124
+    vars                           shift and go to state 127
 
-state 95
+state 97
 
     (19) param_list -> param_list comma param .
 
@@ -1388,7 +1417,7 @@ state 95
     comma           reduce using rule 19 (param_list -> param_list comma param .)
 
 
-state 96
+state 98
 
     (23) func -> VOID identifier opening_par error closing_par opening_brack . vars body closing_brack semicol
     (5) vars -> . VAR var_definition
@@ -1397,9 +1426,9 @@ state 96
     VAR             shift and go to state 9
     opening_anglbrack reduce using rule 6 (vars -> .)
 
-    vars                           shift and go to state 125
+    vars                           shift and go to state 128
 
-state 97
+state 99
 
     (33) assign -> identifier op_assign expression semicol .
 
@@ -1410,7 +1439,7 @@ state 97
     PRINT           reduce using rule 33 (assign -> identifier op_assign expression semicol .)
 
 
-state 98
+state 100
 
     (34) assign -> identifier op_assign const_string semicol .
 
@@ -1421,7 +1450,7 @@ state 98
     PRINT           reduce using rule 34 (assign -> identifier op_assign const_string semicol .)
 
 
-state 99
+state 101
 
     (35) assign -> identifier op_assign error semicol .
 
@@ -1432,7 +1461,7 @@ state 99
     PRINT           reduce using rule 35 (assign -> identifier op_assign error semicol .)
 
 
-state 100
+state 102
 
     (37) expression -> exp op_lesser_than . exp
     (43) exp -> . exp op_plus term
@@ -1451,19 +1480,19 @@ state 100
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    exp                            shift and go to state 126
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    exp                            shift and go to state 129
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 101
+state 103
 
     (38) expression -> exp op_more_than . exp
     (43) exp -> . exp op_plus term
@@ -1482,19 +1511,19 @@ state 101
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    exp                            shift and go to state 127
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    exp                            shift and go to state 130
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 102
+state 104
 
     (39) expression -> exp op_lessthan_equal . exp
     (43) exp -> . exp op_plus term
@@ -1513,19 +1542,19 @@ state 102
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    exp                            shift and go to state 128
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    exp                            shift and go to state 131
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 103
+state 105
 
     (40) expression -> exp op_morethan_equal . exp
     (43) exp -> . exp op_plus term
@@ -1544,19 +1573,19 @@ state 103
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    exp                            shift and go to state 129
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    exp                            shift and go to state 132
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 104
+state 106
 
     (41) expression -> exp op_equals . exp
     (43) exp -> . exp op_plus term
@@ -1575,19 +1604,19 @@ state 104
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    exp                            shift and go to state 130
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    exp                            shift and go to state 133
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 105
+state 107
 
     (42) expression -> exp op_not_equal . exp
     (43) exp -> . exp op_plus term
@@ -1606,19 +1635,19 @@ state 105
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    exp                            shift and go to state 131
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    exp                            shift and go to state 134
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 106
+state 108
 
     (43) exp -> exp op_plus . term
     (46) term -> . term op_mult factor
@@ -1634,18 +1663,18 @@ state 106
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    term                           shift and go to state 132
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    term                           shift and go to state 135
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 107
+state 109
 
     (44) exp -> exp op_minus . term
     (46) term -> . term op_mult factor
@@ -1661,18 +1690,18 @@ state 107
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    term                           shift and go to state 133
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    term                           shift and go to state 136
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 108
+state 110
 
     (50) factor -> op_plus identifier .
 
@@ -1691,7 +1720,7 @@ state 108
     comma           reduce using rule 50 (factor -> op_plus identifier .)
 
 
-state 109
+state 111
 
     (51) factor -> op_plus cte .
 
@@ -1710,7 +1739,7 @@ state 109
     comma           reduce using rule 51 (factor -> op_plus cte .)
 
 
-state 110
+state 112
 
     (46) term -> term op_mult . factor
     (49) factor -> . opening_par expression closing_par
@@ -1723,17 +1752,17 @@ state 110
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    factor                         shift and go to state 134
-    cte                            shift and go to state 79
+    factor                         shift and go to state 137
+    cte                            shift and go to state 80
 
-state 111
+state 113
 
     (47) term -> term op_div . factor
     (49) factor -> . opening_par expression closing_par
@@ -1746,17 +1775,17 @@ state 111
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    factor                         shift and go to state 135
-    cte                            shift and go to state 79
+    factor                         shift and go to state 138
+    cte                            shift and go to state 80
 
-state 112
+state 114
 
     (52) factor -> op_minus identifier .
 
@@ -1775,7 +1804,7 @@ state 112
     comma           reduce using rule 52 (factor -> op_minus identifier .)
 
 
-state 113
+state 115
 
     (53) factor -> op_minus cte .
 
@@ -1794,21 +1823,21 @@ state 113
     comma           reduce using rule 53 (factor -> op_minus cte .)
 
 
-state 114
+state 116
 
     (49) factor -> opening_par expression . closing_par
 
-    closing_par     shift and go to state 136
+    closing_par     shift and go to state 139
 
 
-state 115
+state 117
 
     (58) f_call -> identifier opening_par arguments closing_par . semicol
 
-    semicol         shift and go to state 137
+    semicol         shift and go to state 140
 
 
-state 116
+state 118
 
     (59) arguments -> arguments comma . expression
     (36) expression -> . exp
@@ -1834,93 +1863,66 @@ state 116
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    expression                     shift and go to state 138
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
-
-state 117
-
-    (62) f_call -> identifier opening_par error closing_par . semicol
-
-    semicol         shift and go to state 139
-
-
-state 118
-
-    (71) condition -> IF opening_par expression closing_par . gotof body check_else last_goto
-    (72) gotof -> .
-
-    opening_anglbrack reduce using rule 72 (gotof -> .)
-
-    gotof                          shift and go to state 140
+    expression                     shift and go to state 141
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
 state 119
 
-    (79) condition -> IF opening_par error gotof_dummy . body check_else last_goto_dummy
+    (62) f_call -> identifier opening_par error closing_par . semicol
+
+    semicol         shift and go to state 142
+
+
+state 120
+
+    (75) condition -> IF opening_par expression closing_par . gotof body check_else last_goto
+    (76) gotof -> .
+
+    opening_anglbrack reduce using rule 76 (gotof -> .)
+
+    gotof                          shift and go to state 143
+
+state 121
+
+    (83) condition -> IF opening_par error gotof_dummy . body check_else last_goto_dummy
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
 
-    body                           shift and go to state 141
+    body                           shift and go to state 144
 
-state 120
+state 122
 
-    (69) cycle -> DO body WHILE opening_par . expression closing_par semicol
-    (70) cycle -> DO body WHILE opening_par . error closing_par semicol
-    (36) expression -> . exp
-    (37) expression -> . exp op_lesser_than exp
-    (38) expression -> . exp op_more_than exp
-    (39) expression -> . exp op_lessthan_equal exp
-    (40) expression -> . exp op_morethan_equal exp
-    (41) expression -> . exp op_equals exp
-    (42) expression -> . exp op_not_equal exp
-    (43) exp -> . exp op_plus term
-    (44) exp -> . exp op_minus term
-    (45) exp -> . term
-    (46) term -> . term op_mult factor
-    (47) term -> . term op_div factor
-    (48) term -> . factor
-    (49) factor -> . opening_par expression closing_par
-    (50) factor -> . op_plus identifier
-    (51) factor -> . op_plus cte
-    (52) factor -> . op_minus identifier
-    (53) factor -> . op_minus cte
-    (54) factor -> . identifier
-    (55) factor -> . cte
-    (56) cte -> . const_int
-    (57) cte -> . const_float
+    (69) cycle -> DO start_cycle body WHILE . opening_par expression closing_par end_cycle semicol
 
-    error           shift and go to state 143
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    opening_par     shift and go to state 145
 
-    expression                     shift and go to state 142
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
 
-state 121
+state 123
+
+    (74) cycle -> DO start_cycle_dummy body WHILE . opening_par error closing_par end_cycle_dummy semicol
+
+    opening_par     shift and go to state 146
+
+
+state 124
 
     (63) print_statement -> PRINT opening_par print_args closing_par . semicol
 
-    semicol         shift and go to state 144
+    semicol         shift and go to state 147
 
 
-state 122
+state 125
 
     (64) print_args -> print_args comma . print_arg
     (66) print_arg -> . expression
@@ -1948,47 +1950,47 @@ state 122
     (56) cte -> . const_int
     (57) cte -> . const_float
 
-    const_string    shift and go to state 92
-    opening_par     shift and go to state 78
-    op_plus         shift and go to state 74
-    op_minus        shift and go to state 76
-    identifier      shift and go to state 69
-    const_int       shift and go to state 80
-    const_float     shift and go to state 81
+    const_string    shift and go to state 94
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
 
-    print_arg                      shift and go to state 145
-    expression                     shift and go to state 91
-    exp                            shift and go to state 73
-    term                           shift and go to state 75
-    factor                         shift and go to state 77
-    cte                            shift and go to state 79
+    print_arg                      shift and go to state 148
+    expression                     shift and go to state 93
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
 
-state 123
+state 126
 
     (68) print_statement -> PRINT opening_par error closing_par . semicol
 
-    semicol         shift and go to state 146
+    semicol         shift and go to state 149
 
 
-state 124
+state 127
 
     (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars . body closing_brack semicol
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
 
-    body                           shift and go to state 147
+    body                           shift and go to state 150
 
-state 125
+state 128
 
     (23) func -> VOID identifier opening_par error closing_par opening_brack vars . body closing_brack semicol
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
 
-    body                           shift and go to state 148
+    body                           shift and go to state 151
 
-state 126
+state 129
 
     (37) expression -> exp op_lesser_than exp .
     (43) exp -> exp . op_plus term
@@ -1997,11 +1999,11 @@ state 126
     semicol         reduce using rule 37 (expression -> exp op_lesser_than exp .)
     closing_par     reduce using rule 37 (expression -> exp op_lesser_than exp .)
     comma           reduce using rule 37 (expression -> exp op_lesser_than exp .)
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 127
+state 130
 
     (38) expression -> exp op_more_than exp .
     (43) exp -> exp . op_plus term
@@ -2010,11 +2012,11 @@ state 127
     semicol         reduce using rule 38 (expression -> exp op_more_than exp .)
     closing_par     reduce using rule 38 (expression -> exp op_more_than exp .)
     comma           reduce using rule 38 (expression -> exp op_more_than exp .)
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 128
+state 131
 
     (39) expression -> exp op_lessthan_equal exp .
     (43) exp -> exp . op_plus term
@@ -2023,11 +2025,11 @@ state 128
     semicol         reduce using rule 39 (expression -> exp op_lessthan_equal exp .)
     closing_par     reduce using rule 39 (expression -> exp op_lessthan_equal exp .)
     comma           reduce using rule 39 (expression -> exp op_lessthan_equal exp .)
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 129
+state 132
 
     (40) expression -> exp op_morethan_equal exp .
     (43) exp -> exp . op_plus term
@@ -2036,11 +2038,11 @@ state 129
     semicol         reduce using rule 40 (expression -> exp op_morethan_equal exp .)
     closing_par     reduce using rule 40 (expression -> exp op_morethan_equal exp .)
     comma           reduce using rule 40 (expression -> exp op_morethan_equal exp .)
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 130
+state 133
 
     (41) expression -> exp op_equals exp .
     (43) exp -> exp . op_plus term
@@ -2049,11 +2051,11 @@ state 130
     semicol         reduce using rule 41 (expression -> exp op_equals exp .)
     closing_par     reduce using rule 41 (expression -> exp op_equals exp .)
     comma           reduce using rule 41 (expression -> exp op_equals exp .)
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 131
+state 134
 
     (42) expression -> exp op_not_equal exp .
     (43) exp -> exp . op_plus term
@@ -2062,11 +2064,11 @@ state 131
     semicol         reduce using rule 42 (expression -> exp op_not_equal exp .)
     closing_par     reduce using rule 42 (expression -> exp op_not_equal exp .)
     comma           reduce using rule 42 (expression -> exp op_not_equal exp .)
-    op_plus         shift and go to state 106
-    op_minus        shift and go to state 107
+    op_plus         shift and go to state 108
+    op_minus        shift and go to state 109
 
 
-state 132
+state 135
 
     (43) exp -> exp op_plus term .
     (46) term -> term . op_mult factor
@@ -2083,11 +2085,11 @@ state 132
     semicol         reduce using rule 43 (exp -> exp op_plus term .)
     closing_par     reduce using rule 43 (exp -> exp op_plus term .)
     comma           reduce using rule 43 (exp -> exp op_plus term .)
-    op_mult         shift and go to state 110
-    op_div          shift and go to state 111
+    op_mult         shift and go to state 112
+    op_div          shift and go to state 113
 
 
-state 133
+state 136
 
     (44) exp -> exp op_minus term .
     (46) term -> term . op_mult factor
@@ -2104,11 +2106,11 @@ state 133
     semicol         reduce using rule 44 (exp -> exp op_minus term .)
     closing_par     reduce using rule 44 (exp -> exp op_minus term .)
     comma           reduce using rule 44 (exp -> exp op_minus term .)
-    op_mult         shift and go to state 110
-    op_div          shift and go to state 111
+    op_mult         shift and go to state 112
+    op_div          shift and go to state 113
 
 
-state 134
+state 137
 
     (46) term -> term op_mult factor .
 
@@ -2127,7 +2129,7 @@ state 134
     comma           reduce using rule 46 (term -> term op_mult factor .)
 
 
-state 135
+state 138
 
     (47) term -> term op_div factor .
 
@@ -2146,7 +2148,7 @@ state 135
     comma           reduce using rule 47 (term -> term op_div factor .)
 
 
-state 136
+state 139
 
     (49) factor -> opening_par expression closing_par .
 
@@ -2165,7 +2167,7 @@ state 136
     comma           reduce using rule 49 (factor -> opening_par expression closing_par .)
 
 
-state 137
+state 140
 
     (58) f_call -> identifier opening_par arguments closing_par semicol .
 
@@ -2176,7 +2178,7 @@ state 137
     PRINT           reduce using rule 58 (f_call -> identifier opening_par arguments closing_par semicol .)
 
 
-state 138
+state 141
 
     (59) arguments -> arguments comma expression .
 
@@ -2184,7 +2186,7 @@ state 138
     comma           reduce using rule 59 (arguments -> arguments comma expression .)
 
 
-state 139
+state 142
 
     (62) f_call -> identifier opening_par error closing_par semicol .
 
@@ -2195,43 +2197,75 @@ state 139
     PRINT           reduce using rule 62 (f_call -> identifier opening_par error closing_par semicol .)
 
 
-state 140
+state 143
 
-    (71) condition -> IF opening_par expression closing_par gotof . body check_else last_goto
+    (75) condition -> IF opening_par expression closing_par gotof . body check_else last_goto
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
 
-    body                           shift and go to state 149
-
-state 141
-
-    (79) condition -> IF opening_par error gotof_dummy body . check_else last_goto_dummy
-    (74) check_else -> . else_goto body
-    (78) check_else -> .
-    (75) else_goto -> . ELSE
-
-    semicol         reduce using rule 78 (check_else -> .)
-    ELSE            shift and go to state 152
-
-    check_else                     shift and go to state 150
-    else_goto                      shift and go to state 151
-
-state 142
-
-    (69) cycle -> DO body WHILE opening_par expression . closing_par semicol
-
-    closing_par     shift and go to state 153
-
-
-state 143
-
-    (70) cycle -> DO body WHILE opening_par error . closing_par semicol
-
-    closing_par     shift and go to state 154
-
+    body                           shift and go to state 152
 
 state 144
+
+    (83) condition -> IF opening_par error gotof_dummy body . check_else last_goto_dummy
+    (78) check_else -> . else_goto body
+    (82) check_else -> .
+    (79) else_goto -> . ELSE
+
+    semicol         reduce using rule 82 (check_else -> .)
+    ELSE            shift and go to state 155
+
+    check_else                     shift and go to state 153
+    else_goto                      shift and go to state 154
+
+state 145
+
+    (69) cycle -> DO start_cycle body WHILE opening_par . expression closing_par end_cycle semicol
+    (36) expression -> . exp
+    (37) expression -> . exp op_lesser_than exp
+    (38) expression -> . exp op_more_than exp
+    (39) expression -> . exp op_lessthan_equal exp
+    (40) expression -> . exp op_morethan_equal exp
+    (41) expression -> . exp op_equals exp
+    (42) expression -> . exp op_not_equal exp
+    (43) exp -> . exp op_plus term
+    (44) exp -> . exp op_minus term
+    (45) exp -> . term
+    (46) term -> . term op_mult factor
+    (47) term -> . term op_div factor
+    (48) term -> . factor
+    (49) factor -> . opening_par expression closing_par
+    (50) factor -> . op_plus identifier
+    (51) factor -> . op_plus cte
+    (52) factor -> . op_minus identifier
+    (53) factor -> . op_minus cte
+    (54) factor -> . identifier
+    (55) factor -> . cte
+    (56) cte -> . const_int
+    (57) cte -> . const_float
+
+    opening_par     shift and go to state 79
+    op_plus         shift and go to state 75
+    op_minus        shift and go to state 77
+    identifier      shift and go to state 70
+    const_int       shift and go to state 81
+    const_float     shift and go to state 82
+
+    expression                     shift and go to state 156
+    exp                            shift and go to state 74
+    term                           shift and go to state 76
+    factor                         shift and go to state 78
+    cte                            shift and go to state 80
+
+state 146
+
+    (74) cycle -> DO start_cycle_dummy body WHILE opening_par . error closing_par end_cycle_dummy semicol
+
+    error           shift and go to state 157
+
+
+state 147
 
     (63) print_statement -> PRINT opening_par print_args closing_par semicol .
 
@@ -2242,7 +2276,7 @@ state 144
     PRINT           reduce using rule 63 (print_statement -> PRINT opening_par print_args closing_par semicol .)
 
 
-state 145
+state 148
 
     (64) print_args -> print_args comma print_arg .
 
@@ -2250,7 +2284,7 @@ state 145
     comma           reduce using rule 64 (print_args -> print_args comma print_arg .)
 
 
-state 146
+state 149
 
     (68) print_statement -> PRINT opening_par error closing_par semicol .
 
@@ -2261,147 +2295,143 @@ state 146
     PRINT           reduce using rule 68 (print_statement -> PRINT opening_par error closing_par semicol .)
 
 
-state 147
+state 150
 
     (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body . closing_brack semicol
 
-    closing_brack   shift and go to state 155
+    closing_brack   shift and go to state 158
 
-
-state 148
-
-    (23) func -> VOID identifier opening_par error closing_par opening_brack vars body . closing_brack semicol
-
-    closing_brack   shift and go to state 156
-
-
-state 149
-
-    (71) condition -> IF opening_par expression closing_par gotof body . check_else last_goto
-    (74) check_else -> . else_goto body
-    (78) check_else -> .
-    (75) else_goto -> . ELSE
-
-    semicol         reduce using rule 78 (check_else -> .)
-    ELSE            shift and go to state 152
-
-    check_else                     shift and go to state 157
-    else_goto                      shift and go to state 151
-
-state 150
-
-    (79) condition -> IF opening_par error gotof_dummy body check_else . last_goto_dummy
-    (77) last_goto_dummy -> . semicol
-
-    semicol         shift and go to state 159
-
-    last_goto_dummy                shift and go to state 158
 
 state 151
 
-    (74) check_else -> else_goto . body
+    (23) func -> VOID identifier opening_par error closing_par opening_brack vars body . closing_brack semicol
+
+    closing_brack   shift and go to state 159
+
+
+state 152
+
+    (75) condition -> IF opening_par expression closing_par gotof body . check_else last_goto
+    (78) check_else -> . else_goto body
+    (82) check_else -> .
+    (79) else_goto -> . ELSE
+
+    semicol         reduce using rule 82 (check_else -> .)
+    ELSE            shift and go to state 155
+
+    check_else                     shift and go to state 160
+    else_goto                      shift and go to state 154
+
+state 153
+
+    (83) condition -> IF opening_par error gotof_dummy body check_else . last_goto_dummy
+    (81) last_goto_dummy -> . semicol
+
+    semicol         shift and go to state 162
+
+    last_goto_dummy                shift and go to state 161
+
+state 154
+
+    (78) check_else -> else_goto . body
     (24) body -> . opening_anglbrack statements closing_anglbrack
 
     opening_anglbrack shift and go to state 27
 
-    body                           shift and go to state 160
-
-state 152
-
-    (75) else_goto -> ELSE .
-
-    opening_anglbrack reduce using rule 75 (else_goto -> ELSE .)
-
-
-state 153
-
-    (69) cycle -> DO body WHILE opening_par expression closing_par . semicol
-
-    semicol         shift and go to state 161
-
-
-state 154
-
-    (70) cycle -> DO body WHILE opening_par error closing_par . semicol
-
-    semicol         shift and go to state 162
-
+    body                           shift and go to state 163
 
 state 155
 
-    (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack . semicol
+    (79) else_goto -> ELSE .
 
-    semicol         shift and go to state 163
+    opening_anglbrack reduce using rule 79 (else_goto -> ELSE .)
 
 
 state 156
 
-    (23) func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack . semicol
+    (69) cycle -> DO start_cycle body WHILE opening_par expression . closing_par end_cycle semicol
 
-    semicol         shift and go to state 164
+    closing_par     shift and go to state 164
 
 
 state 157
 
-    (71) condition -> IF opening_par expression closing_par gotof body check_else . last_goto
-    (76) last_goto -> . semicol
+    (74) cycle -> DO start_cycle_dummy body WHILE opening_par error . closing_par end_cycle_dummy semicol
 
-    semicol         shift and go to state 166
+    closing_par     shift and go to state 165
 
-    last_goto                      shift and go to state 165
 
 state 158
 
-    (79) condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .
+    (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack . semicol
 
-    closing_anglbrack reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
-    identifier      reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
-    IF              reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
-    DO              reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
-    PRINT           reduce using rule 79 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    semicol         shift and go to state 166
 
 
 state 159
 
-    (77) last_goto_dummy -> semicol .
+    (23) func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack . semicol
 
-    closing_anglbrack reduce using rule 77 (last_goto_dummy -> semicol .)
-    identifier      reduce using rule 77 (last_goto_dummy -> semicol .)
-    IF              reduce using rule 77 (last_goto_dummy -> semicol .)
-    DO              reduce using rule 77 (last_goto_dummy -> semicol .)
-    PRINT           reduce using rule 77 (last_goto_dummy -> semicol .)
+    semicol         shift and go to state 167
 
 
 state 160
 
-    (74) check_else -> else_goto body .
+    (75) condition -> IF opening_par expression closing_par gotof body check_else . last_goto
+    (80) last_goto -> . semicol
 
-    semicol         reduce using rule 74 (check_else -> else_goto body .)
+    semicol         shift and go to state 169
 
+    last_goto                      shift and go to state 168
 
 state 161
 
-    (69) cycle -> DO body WHILE opening_par expression closing_par semicol .
+    (83) condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .
 
-    closing_anglbrack reduce using rule 69 (cycle -> DO body WHILE opening_par expression closing_par semicol .)
-    identifier      reduce using rule 69 (cycle -> DO body WHILE opening_par expression closing_par semicol .)
-    IF              reduce using rule 69 (cycle -> DO body WHILE opening_par expression closing_par semicol .)
-    DO              reduce using rule 69 (cycle -> DO body WHILE opening_par expression closing_par semicol .)
-    PRINT           reduce using rule 69 (cycle -> DO body WHILE opening_par expression closing_par semicol .)
+    closing_anglbrack reduce using rule 83 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    identifier      reduce using rule 83 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    IF              reduce using rule 83 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    DO              reduce using rule 83 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
+    PRINT           reduce using rule 83 (condition -> IF opening_par error gotof_dummy body check_else last_goto_dummy .)
 
 
 state 162
 
-    (70) cycle -> DO body WHILE opening_par error closing_par semicol .
+    (81) last_goto_dummy -> semicol .
 
-    closing_anglbrack reduce using rule 70 (cycle -> DO body WHILE opening_par error closing_par semicol .)
-    identifier      reduce using rule 70 (cycle -> DO body WHILE opening_par error closing_par semicol .)
-    IF              reduce using rule 70 (cycle -> DO body WHILE opening_par error closing_par semicol .)
-    DO              reduce using rule 70 (cycle -> DO body WHILE opening_par error closing_par semicol .)
-    PRINT           reduce using rule 70 (cycle -> DO body WHILE opening_par error closing_par semicol .)
+    closing_anglbrack reduce using rule 81 (last_goto_dummy -> semicol .)
+    identifier      reduce using rule 81 (last_goto_dummy -> semicol .)
+    IF              reduce using rule 81 (last_goto_dummy -> semicol .)
+    DO              reduce using rule 81 (last_goto_dummy -> semicol .)
+    PRINT           reduce using rule 81 (last_goto_dummy -> semicol .)
 
 
 state 163
+
+    (78) check_else -> else_goto body .
+
+    semicol         reduce using rule 78 (check_else -> else_goto body .)
+
+
+state 164
+
+    (69) cycle -> DO start_cycle body WHILE opening_par expression closing_par . end_cycle semicol
+    (72) end_cycle -> .
+
+    semicol         reduce using rule 72 (end_cycle -> .)
+
+    end_cycle                      shift and go to state 170
+
+state 165
+
+    (74) cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par . end_cycle_dummy semicol
+    (73) end_cycle_dummy -> .
+
+    semicol         reduce using rule 73 (end_cycle_dummy -> .)
+
+    end_cycle_dummy                shift and go to state 171
+
+state 166
 
     (18) func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack semicol .
 
@@ -2409,7 +2439,7 @@ state 163
     MAIN            reduce using rule 18 (func -> VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack semicol .)
 
 
-state 164
+state 167
 
     (23) func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol .
 
@@ -2417,26 +2447,62 @@ state 164
     MAIN            reduce using rule 23 (func -> VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol .)
 
 
-state 165
+state 168
 
-    (71) condition -> IF opening_par expression closing_par gotof body check_else last_goto .
+    (75) condition -> IF opening_par expression closing_par gotof body check_else last_goto .
 
-    closing_anglbrack reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
-    identifier      reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
-    IF              reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
-    DO              reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
-    PRINT           reduce using rule 71 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    closing_anglbrack reduce using rule 75 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    identifier      reduce using rule 75 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    IF              reduce using rule 75 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    DO              reduce using rule 75 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
+    PRINT           reduce using rule 75 (condition -> IF opening_par expression closing_par gotof body check_else last_goto .)
 
 
-state 166
+state 169
 
-    (76) last_goto -> semicol .
+    (80) last_goto -> semicol .
 
-    closing_anglbrack reduce using rule 76 (last_goto -> semicol .)
-    identifier      reduce using rule 76 (last_goto -> semicol .)
-    IF              reduce using rule 76 (last_goto -> semicol .)
-    DO              reduce using rule 76 (last_goto -> semicol .)
-    PRINT           reduce using rule 76 (last_goto -> semicol .)
+    closing_anglbrack reduce using rule 80 (last_goto -> semicol .)
+    identifier      reduce using rule 80 (last_goto -> semicol .)
+    IF              reduce using rule 80 (last_goto -> semicol .)
+    DO              reduce using rule 80 (last_goto -> semicol .)
+    PRINT           reduce using rule 80 (last_goto -> semicol .)
+
+
+state 170
+
+    (69) cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle . semicol
+
+    semicol         shift and go to state 172
+
+
+state 171
+
+    (74) cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy . semicol
+
+    semicol         shift and go to state 173
+
+
+state 172
+
+    (69) cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol .
+
+    closing_anglbrack reduce using rule 69 (cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol .)
+    identifier      reduce using rule 69 (cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol .)
+    IF              reduce using rule 69 (cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol .)
+    DO              reduce using rule 69 (cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol .)
+    PRINT           reduce using rule 69 (cycle -> DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol .)
+
+
+state 173
+
+    (74) cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol .
+
+    closing_anglbrack reduce using rule 74 (cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol .)
+    identifier      reduce using rule 74 (cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol .)
+    IF              reduce using rule 74 (cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol .)
+    DO              reduce using rule 74 (cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol .)
+    PRINT           reduce using rule 74 (cycle -> DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol .)
 
 WARNING: 
 WARNING: Conflicts:
@@ -2445,3 +2511,6 @@ WARNING: shift/reduce conflict for identifier in state 27 resolved as shift
 WARNING: shift/reduce conflict for IF in state 27 resolved as shift
 WARNING: shift/reduce conflict for DO in state 27 resolved as shift
 WARNING: shift/reduce conflict for PRINT in state 27 resolved as shift
+WARNING: reduce/reduce conflict in state 46 resolved using rule (start_cycle -> <empty>)
+WARNING: rejected rule (start_cycle_dummy -> <empty>) in state 46
+WARNING: Rule (start_cycle_dummy -> <empty>) is never reduced

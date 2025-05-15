@@ -363,11 +363,13 @@ def p_print_args_single(t):
 
 def p_print_arg_expression(t):
     'print_arg : expression'
-    t[0] = t[1]
+    Ds.addPrint()
+    
 
 def p_print_arg_string(t):
     'print_arg : const_string'
-    t[0] = t[1][1:-1] 
+    Ds.add_to_operand_stack(t[1], 'string', 1)
+    Ds.addPrint()
 
 #Error dentro de expresión de string
 def p_print_error(t):
@@ -378,15 +380,28 @@ def p_print_error(t):
 
 #CYCLE    ::= 'do' BODY 'while' '(' EXPRESSION ')' ';'
 def p_cycle(t):
-    'cycle : DO body WHILE opening_par expression closing_par semicol'
-    t[0] = ('cycle', t[2], t[5])
+    'cycle : DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol'
+    
+def p_start_cycle(t):
+    'start_cycle : '
+    Ds.start_cycle()
+
+def p_start_cycle_dummy(t):
+    'start_cycle_dummy : '
+
+def p_end_cycle(t):
+    'end_cycle : '
+    Ds.add_cycle()
+
+def p_end_cycle_dummy(t):
+    'end_cycle_dummy : '
 
 #Error de expresión
 def p_cycle_error(t):
-    'cycle : DO body WHILE opening_par error closing_par semicol'
+    'cycle : DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol'
     global error_list
     error_list.append("At cycle definition: Bad expression")
-    t[0] = []
+    
 
 #CONDITION ::= 'if' '(' EXPRESSION ')' BODY ( 'else' BODY )? ';'
 
@@ -424,6 +439,7 @@ def p_condition_error(t):
     'condition : IF opening_par error gotof_dummy body check_else last_goto_dummy'
     global error_list
     error_list.append("At If creation: Bad expression")
+
     t[0] = []
 
 

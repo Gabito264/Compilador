@@ -7,21 +7,9 @@ main {
     C = 12;
     D = 10;
 
-    if (A + B > D)
-    {
-        if (A < B)
-        {
-            A = 0;
-            B = B + D;
-        }
-        else
-        {
-            C = A + B;
-        };
-    }
-    else
-    {
-        A = B + C;
-    };
-    D = B + A * C;
+    print(A, 2, "hola");
+
+    do{
+        print(B+C+D);
+    }while(B < 10);
 } end
