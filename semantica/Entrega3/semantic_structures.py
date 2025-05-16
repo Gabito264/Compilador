@@ -119,6 +119,8 @@ class objects:
             last, last_type, is_valid = self.operand_stack.pop()
             if is_valid:
                 self.quad_list.append(('print', last, None, None, last_type))
+    def addLast_print(self):
+        self.quad_list.append(("print", "\\n", None, None, "string"))
     
     def start_cycle(self):
         self.cycle_index_list.append(len(self.quad_list)+1)
@@ -128,7 +130,7 @@ class objects:
             last, last_type, is_valid = self.operand_stack.pop()
             index = self.cycle_index_list.pop()
             if last_type == 'bool':
-                self.quad_list.append(('gotoCycle', last, None, index, last_type))
+                self.quad_list.append(('gotoV', last, None, index, last_type))
             else:
                 error = "Condition does not give a boolean result in cycle"
                 self.errors_found.append(error)
