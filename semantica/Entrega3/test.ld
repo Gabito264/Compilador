@@ -10,6 +10,6 @@ main {
     print(A, 2, "hola");
 
     do{
-        print(B+C+D);
+        print(B,B+C+D, D);
     }while(B < 10);
 } end

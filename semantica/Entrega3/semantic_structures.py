@@ -1,4 +1,48 @@
 from semantic_cube import semantic_cube
+class program_functions:
+    function_directory = {}
+    scope_stack = []
+    errors = []
+    error_found = False
+
+    def __init__(self):
+        self.function_directory = {}
+        self.scope_stack = []
+        self.errors = []
+        self.error_found = False
+    
+    def create_function(self, return_type, name ,n_params):
+        if name not in self.function_directory:
+            self.function_directory[name] ={
+                'return_type' : return_type,
+                'n_params' : n_params,
+                'var_table' : {}
+            }
+            self.scope_stack.append(self.function_directory[name]['var_table'])
+        else:
+            error = "Error, function " + name + " already exists"
+            self.errors.append(error)
+            self.error_found = True
+
+    def eliminate_function(self):
+        self.scope_stack.pop()
+
+    def declare_vars_in_scope(self, id_list, var_type, lineno):
+        current_scope = self.scope_stack[-1]
+        for name in id_list:
+            if name in current_scope:
+                self.errors.append(f"Variable '{name}' already declared in current scope (line {lineno})")
+            else:
+                current_scope[name] = {
+                    'scope' : 'global',
+                    'type': var_type,
+                    'value': None,
+                    'declared_line': lineno,
+                    'is_null' : True
+                }
+
+
+
 class objects:
     t_count = 0
     #quad = (op, left, right, result)
@@ -9,7 +53,7 @@ class objects:
     pending_jumps = []
     #por si encontramos un error
     errors_found = []
-
+    #Lista separada para ciclos (por si acaso)
     cycle_index_list = []
 
     def __init__(self):
@@ -17,6 +61,8 @@ class objects:
         self.quad_list = []
         self.operand_stack = []
         self.pending_jumps = []
+        self.errors_found = []
+        self.cycle_index_list = []
 
     #checar si el stack de operandos tiene una entrada válida
     def checkOperandStack(self):
@@ -119,6 +165,7 @@ class objects:
             last, last_type, is_valid = self.operand_stack.pop()
             if is_valid:
                 self.quad_list.append(('print', last, None, None, last_type))
+
     def addLast_print(self):
         self.quad_list.append(("print", "\\n", None, None, "string"))
     
@@ -134,6 +181,3 @@ class objects:
             else:
                 error = "Condition does not give a boolean result in cycle"
                 self.errors_found.append(error)
-
-
-#preguntar sobre como reaccionar ante errores generales ahora sí
