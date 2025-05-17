@@ -1,15 +1,13 @@
 program proquacks;
-var 
-        A, B, C, D : int ; F : string;
+var A, B, C, D : int ; F : string;
+
+void generic(A:int, C:float, E: float)[
+var F, G: int;
+{
+    print("hola");
+}
+];
 main {
-    A = 7;
-    B = 1;
-    C = 12;
-    D = 10;
-
-    print(A, 2, "hola");
-
-    do{
-        print(B,B+C+D, D);
-    }while(B < 10);
+    print("hola");
+    generic(10, 20.5, 2.5+1+2);
 } end

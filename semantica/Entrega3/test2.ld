@@ -1,11 +1,27 @@
-program error_handling;
+program condition_test;
 var 
         A, B, C, D : int ; F: string;
 main {
-    @Darle un float a int no dará error, pero se truncará más adelante
-    A = 7.5;
-    @B no puede ser un booleano si este es int
-    B = 1 < 5;
-    @ No podemos asignar un valor que no sea string a un string
-    F = 234;
+    A = 7;
+    B = 1;
+    C = 12;
+    D = 10;
+
+    if (A + B > D)
+    {
+        if (A < B)
+        {
+            A = 0;
+            B = B + D;
+        }
+        else
+        {
+            C = A + B;
+        };
+    }
+    else
+    {
+        A = B + C;
+    };
+    D = B + A * C;
 } end

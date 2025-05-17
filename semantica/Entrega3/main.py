@@ -5,8 +5,6 @@ import ply.yacc as yacc
 
 start = 'programa'
 
-# function_directory = {}
-# scope_stack=[]
 
 syntax_error = 0
 error_list = []
@@ -17,12 +15,17 @@ Ds = objects()
 
 #PROGRAMA ::= 'program' 'id' ';' VARS? FUNCS* 'main' BODY 'end'
 def p_programa(t):
-    'programa : PROGRAM identifier create_program semicol vars funcs MAIN body END elim_program'
+    'programa : PROGRAM identifier create_program semicol vars funcs MAIN complete_main body END elim_program'
     t[0] = ('programa', t[2], t[5], t[6], t[8])
 
 def p_create_program(t):
     'create_program : '
-    Scopes.create_function('proram', t[-1], 0)
+    Scopes.create_function('program', t[-1])
+    Ds.create_main()
+
+def p_complete_main(t):
+    'complete_main : '
+    Ds.complete_main()
 
 def p_elim_program(t):
     'elim_program : '
@@ -47,22 +50,23 @@ def p_vars_empty(t):
 
 def p_definition(t):
     'var_definition : id_list twopoint type semicol var_definition'
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2))
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False)
     t[0] = [('var_decl', t[1], t[3])] + t[5]
     
-
 def p_definition_once(t):
     'var_definition : id_list twopoint type semicol'
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2))
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False)
     t[0] = [('var_decl', t[1], t[3])]
 
 def p_id_list(t):
     'id_list : identifier comma id_list'
     t[0] = [t[1]] + t[3]
+    Scopes.n_local+=1
 
 def p_id_list_once(t):
     'id_list : identifier'
     t[0] = [t[1]]
+    Scopes.n_local+=1
 
 #Error en listar las variables
 def p_definition_error(t):
@@ -101,8 +105,22 @@ def p_funcs_empty(t):
     t[0] = []
 
 def p_func(t):
-    'func : VOID identifier opening_par param_list closing_par opening_brack vars body closing_brack semicol'
+    'func : VOID identifier create_function opening_par param_list closing_par opening_brack vars create_func_quad body closing_brack semicol end_function'
     t[0] = ('func', t[2], t[4], t[7], t[8]) 
+
+def p_create_function(t):
+    'create_function : '
+    Scopes.create_function('Void', t[-1])
+
+def p_create_func_quad(t):
+    'create_func_quad : '
+    Scopes.update_vars()
+    Ds.create_function(Scopes)
+
+def p_end_function(t):
+    'end_function : '
+    Ds.create_function_quad(Scopes)
+    Scopes.eliminate_function()
 
 def p_param_list(t):
     'param_list : param_list comma param'
@@ -119,14 +137,17 @@ def p_param_list_empty(t):
 def p_param(t):
     'param : identifier twopoint type'
     t[0] = (t[1], t[3])
+    Scopes.n_params+=1
+    Scopes.param_order.append(t[3])
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True)
 
 #Error al definir func
-def p_func_error(t):
-    'func : VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol'
-    global error_list
-    error_list.append("At function creation: Bad list of parameters")
+# def p_func_error(t):
+#     'func : VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol'
+#     global error_list
+#     error_list.append("At function creation: Bad list of parameters")
     
-    t[0] = []
+#     t[0] = []
 
 #BODY     ::= '{' STATEMENT* '}'
 def p_body(t):
@@ -171,13 +192,14 @@ def p_statement_print(t):
 # ASSIGN   ::= 'id' '=' (EXPRESSION | 'cte_string' ) ';'
 def p_assign(t):
     'assign : identifier op_assign expression semicol'
-
-    Ds.add_assignation(t[1], Scopes.scope_stack)
+    if not Scopes.error_found:
+        Ds.add_assignation(t[1], Scopes.scope_stack)
 
 def p_assign_string(t):
     'assign : identifier op_assign const_string semicol'
-    Ds.add_to_operand_stack(t[3], 'string', 1)
-    Ds.add_assignation(t[1], Scopes.scope_stack)
+    if not Scopes.error_found:
+        Ds.add_to_operand_stack(t[3], 'string', 1)
+        Ds.add_assignation(t[1], Scopes.scope_stack)
 
 #error en asignación normal, expresiones inválidas
 def p_assign_error(t):
@@ -189,7 +211,6 @@ def p_assign_error(t):
 def p_expression(t):
     'expression : exp'
     
-
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
     Ds.add_to_quad_list("<")
@@ -227,7 +248,6 @@ def p_exp_minus(t):
 def p_exp_term(t):
     'exp : term'
     
-
 #TERM     ::= FACTOR ( ( '*' | '/' ) FACTOR )*
 def p_term_mult(t):
     'term : term op_mult factor'
@@ -248,13 +268,14 @@ def p_factor_expression(t):
 
 def p_factor_plus_id(t):
     'factor : op_plus identifier'
-    name = t[2]
-    var = name in Scopes.scope_stack[-1]
-    if (var and Scopes.scope_stack[-1][name]['is_null'] == False):
-        Ds.add_to_operand_stack(name, Scopes.scope_stack[-1][name]["type"], 1)
-    else:
-        Ds.add_to_operand_stack(name, 'error', 0)
-    Ds.add_single_to_quad("+")
+    if not Scopes.error_found:
+        name = t[2]
+        var = name in Scopes.scope_stack[-1]['var_table']
+        if (var and Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False):
+            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
+        else:
+            Ds.add_to_operand_stack(name, 'error', 0)
+        Ds.add_single_to_quad("+")
 
 def p_factor_plus_cte(t):
     'factor : op_plus cte'
@@ -262,13 +283,14 @@ def p_factor_plus_cte(t):
 
 def p_factor_minus_id(t):
     'factor : op_minus identifier'
-    name = t[2]
-    var = name in Scopes.scope_stack[-1]
-    if (var and Scopes.scope_stack[-1][name]['is_null'] == False):
-        Ds.add_to_operand_stack(name, Scopes.scope_stack[-1][name]["type"], 1)
-    else:
-        Ds.add_to_operand_stack(name, 'error', 0)
-    Ds.add_single_to_quad("-")
+    if not Scopes.error_found:
+        name = t[2]
+        var = name in Scopes.scope_stack[-1]['var_table']
+        if (var and Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False):
+            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
+        else:
+            Ds.add_to_operand_stack(name, 'error', 0)
+        Ds.add_single_to_quad("-")
 
 def p_factor_minus_cte(t):
     'factor : op_minus cte'
@@ -276,12 +298,13 @@ def p_factor_minus_cte(t):
 
 def p_factor_id(t):
     'factor : identifier'
-    name = t[1]
-    var = name in Scopes.scope_stack[-1]
-    if (var and Scopes.scope_stack[-1][name]['is_null'] == False):
-        Ds.add_to_operand_stack(name, Scopes.scope_stack[-1][name]["type"], 1)
-    else:
-        Ds.add_to_operand_stack(name, 'error', 0)
+    if not Scopes.error_found:
+        name = t[1]
+        var = name in Scopes.scope_stack[-1]['var_table']
+        if (var and Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False):
+            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
+        else:
+            Ds.add_to_operand_stack(name, 'error', 0)
 
 def p_factor_cte(t):
     'factor : cte'
@@ -297,28 +320,41 @@ def p_cte_float(t):
 
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
-    'f_call : identifier opening_par arguments closing_par semicol'
+    'f_call : identifier check_function opening_par arguments closing_par semicol make_call_quads'
     t[0] = ('call', t[1], t[3])
+
+def p_check_function(t):
+    'check_function : '
+    if not Scopes.error_found:
+        if (t[-1] in Scopes.function_directory):
+            Scopes.name_called = t[-1]
+
+def p_make_call_quads(t):
+    'make_call_quads : '
+    if not Scopes.error_found:
+        Ds.fcallquads(Scopes)
 
 def p_arguments_mult(t):
     'arguments : arguments comma expression'
     t[0] = t[1] + [t[3]]
+    Ds.addParam()
 
 def p_arguments_single(t):
     'arguments : expression'
     t[0] = [t[1]]
+    Ds.addParam()
 
 def p_arguments_empty(t):
     'arguments : '
     t[0] = []
 
 #Error de malos arguments
-def p_f_call_error(t):
-    'f_call : identifier opening_par error closing_par semicol'
+# def p_f_call_error(t):
+#     'f_call : identifier opening_par error closing_par semicol'
     
-    global error_list
-    error_list.append("At Function call: bad arguments")
-    t[0] = []
+#     global error_list
+#     error_list.append("At Function call: bad arguments")
+#     t[0] = []
 
 #PRINT    ::= 'print' '(' ( 'cte.string' | EXPRESSION ) ( ',' ( 'cte.string' | EXPRESSION ) )* ')' ';'
 def p_print_statement(t):
@@ -332,16 +368,19 @@ def p_print_args_single(t):
 
 def p_print_arg_expression(t):
     'print_arg : expression'
-    Ds.addPrint()
+    if not Scopes.error_found:
+        Ds.addPrint()
     
 def p_print_arg_string(t):
     'print_arg : const_string'
-    Ds.add_to_operand_stack(t[1], 'string', 1)
-    Ds.addPrint()
+    if not Scopes.error_found:
+        Ds.add_to_operand_stack(t[1], 'string', 1)
+        Ds.addPrint()
 
 def p_last_print(t):
     'last_print : '
-    Ds.addLast_print()
+    if not Scopes.error_found:
+        Ds.addLast_print()
 
 def p_last_print_dummy(t):
     'last_print_dummy : '
@@ -366,7 +405,8 @@ def p_start_cycle_dummy(t):
 
 def p_end_cycle(t):
     'end_cycle : '
-    Ds.add_cycle()
+    if not Scopes.error_found:
+        Ds.add_cycle()
 
 def p_end_cycle_dummy(t):
     'end_cycle_dummy : '
@@ -396,11 +436,13 @@ def p_check_else(t):
 #revisar con dummy y errores sintácticos
 def p_else_goto(t):
     'else_goto : ELSE '
-    Ds.add_goto()
+    if not Scopes.error_found:
+        Ds.add_goto()
 
 def p_last_goto(t):
     'last_goto : semicol'
-    Ds.end_goto()
+    if not Scopes.error_found:
+        Ds.end_goto()
 
 def p_last_goto_dummy(t):
     'last_goto_dummy : semicol'
@@ -447,23 +489,24 @@ else:
 print("\n--SEMANTICAL ANALYSIS--")
 print("-Quadruples-")
 
-if(len(Ds.errors_found) == 0):
+if(not Ds.error_found or not Scopes.error_found):
     print("Number/Operator/Left/Right/result/result_type")
     count = 1
     for quad in Ds.quad_list:
         print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
         count+=1
+    with open('output.txt', 'w') as f:
+        for tupla in Ds.quad_list:
+            f.write(str(tupla) + '\n')
+
+    print("-symbol table-")
+    print("variable/scope/type/line_declared/is_null")
+
+    for scope in Scopes.function_directory:
+        print(scope)
+        for var in Scopes.function_directory[scope]['var_table']:
+            print ( var ,Scopes.function_directory[scope]['var_table'][var])
 else:
     print("--Errors Found--")
     for x in Ds.errors_found:
         print (x)
-
-print("-symbol table-")
-print("variable/scope/type/line_declared/is_null")
-for x in Scopes.function_directory:
-    for y in Scopes.function_directory[x]['var_table']:
-        print(y, Scopes.function_directory[x]['var_table'][y]['scope'], 
-              Scopes.function_directory[x]['var_table'][y]['type'],
-              Scopes.function_directory[x]['var_table'][y]['value'],
-              Scopes.function_directory[x]['var_table'][y]['declared_line'],
-              Scopes.function_directory[x]['var_table'][y]['is_null'])
