@@ -122,6 +122,7 @@ class objects:
                 #print("Invalid operation between " , l_type," and " ,r_type)
                 error = "Invalid operation between " + str(l_type) + " and " + str(r_type)
                 self.errors_found.append(error)
+                self.error_found = True
                 self.operand_stack.append(("error_token", "error", 0))
         
     
@@ -139,10 +140,12 @@ class objects:
                     #print("Invalid assignment, ", var['type'], "cannot be", last_type)
                     error = "Invalid assignment, " + str(var['type']) + " cannot be "+ str(last_type)
                     self.errors_found.append(error)
+                    self.error_found = True
             else:
                 #print("Invalid assignment to variable ", name, ". It does not exist or expression is not valid")
                 error = "Invalid assignment to variable " + str(name) + ". It does not exist or expression is not valid"
                 self.errors_found.append(error)
+                self.error_found = True
 
     def add_single_to_quad(self, operator):
         if not self.error_found:
@@ -157,6 +160,7 @@ class objects:
                 #print("Invalid operation to ", last_type)
                 error = "Invalid operation to " +  str(last_type)
                 self.errors_found.append(error)
+                self.error_found = True
                 self.operand_stack.append(("error_token", "error", 0))
 
     #if
@@ -175,6 +179,7 @@ class objects:
                 index = len(self.quad_list)
                 self.quad_list.append(temp)
                 self.pending_jumps.append(index)
+                self.error_found = True
     
     #else
     def add_goto(self):
@@ -221,6 +226,7 @@ class objects:
                 else:
                     error = "Condition does not give a boolean result in cycle"
                     self.errors_found.append(error)
+                    self.error_found=True
 
     def create_function(self, Scopes):
         if not self.error_found:
@@ -254,7 +260,7 @@ class objects:
             our_stack = self.param_stack
             types = Scopes.function_directory[name]['param_order']
             if len(our_stack) != len(types):
-                error = "Wrong amount of parameters for function" + name
+                error = "Wrong amount of parameters for function " + name
                 self.error_found = True
                 self.errors_found.append(error)
             else:

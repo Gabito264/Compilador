@@ -275,6 +275,9 @@ def p_factor_plus_id(t):
             Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
         else:
             Ds.add_to_operand_stack(name, 'error', 0)
+            error = "Variable " + name + " Does not exist in scope or has not been defined"
+            Ds.errors_found.append(error)
+            Ds.error_found = True
         Ds.add_single_to_quad("+")
 
 def p_factor_plus_cte(t):
@@ -290,6 +293,9 @@ def p_factor_minus_id(t):
             Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
         else:
             Ds.add_to_operand_stack(name, 'error', 0)
+            error = "Variable " + name + " Does not exist in scope"
+            Ds.errors_found.append(error)
+            Ds.error_found = True
         Ds.add_single_to_quad("-")
 
 def p_factor_minus_cte(t):
@@ -305,6 +311,9 @@ def p_factor_id(t):
             Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
         else:
             Ds.add_to_operand_stack(name, 'error', 0)
+            error = "Variable " + name + " Does not exist in scope"
+            Ds.errors_found.append(error)
+            Ds.error_found = True
 
 def p_factor_cte(t):
     'factor : cte'
@@ -328,6 +337,11 @@ def p_check_function(t):
     if not Scopes.error_found:
         if (t[-1] in Scopes.function_directory):
             Scopes.name_called = t[-1]
+        else:
+            error = "Function " + t[-1] + " Does not exist"
+            Ds.errors_found.append(error)
+            Ds.error_found = True
+            Scopes.error_found = True
 
 def p_make_call_quads(t):
     'make_call_quads : '
@@ -489,7 +503,7 @@ else:
 print("\n--SEMANTICAL ANALYSIS--")
 print("-Quadruples-")
 
-if(not Ds.error_found or not Scopes.error_found):
+if(not Ds.error_found and not Scopes.error_found):
     print("Number/Operator/Left/Right/result/result_type")
     count = 1
     for quad in Ds.quad_list:
@@ -499,8 +513,7 @@ if(not Ds.error_found or not Scopes.error_found):
         for tupla in Ds.quad_list:
             f.write(str(tupla) + '\n')
 
-    print("-symbol table-")
-    print("variable/scope/type/line_declared/is_null")
+    print("--Symbol Table--")
 
     for scope in Scopes.function_directory:
         print(scope)
@@ -510,3 +523,5 @@ else:
     print("--Errors Found--")
     for x in Ds.errors_found:
         print (x)
+    for x in Scopes.errors:
+        print(x)

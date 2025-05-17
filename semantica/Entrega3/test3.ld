@@ -1,6 +1,5 @@
 program arithmetic_functions;
 var 
-
         A, B, C, D : int ; F: float;
 main {
     A = 10;
