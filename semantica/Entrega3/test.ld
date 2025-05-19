@@ -9,5 +9,5 @@ var F, G: int;
 ];
 main {
     print("hola");
-    generic(10, 20.5, 2.5+1+2);
+    generic(10, 20.5, 2.5+1 + 2) @error por falta de ;
  } end

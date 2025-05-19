@@ -3,7 +3,7 @@ var
         A, B, C: int ;
 main {
     @no recibe booleano
-    if (3+2.5){
+    if (3 + 2.5){
 
     };
 } end

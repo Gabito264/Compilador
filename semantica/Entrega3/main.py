@@ -25,7 +25,9 @@ def p_create_program(t):
 
 def p_complete_main(t):
     'complete_main : '
-    Ds.complete_main()
+    print("error")
+    if not Scopes.error_found:
+        Ds.complete_main()
 
 def p_elim_program(t):
     'elim_program : '
@@ -114,6 +116,7 @@ def p_create_function(t):
 
 def p_create_func_quad(t):
     'create_func_quad : '
+    # print(Ds.error_found, Scopes.error_found)
     Scopes.update_vars()
     Ds.create_function(Scopes)
 
@@ -332,6 +335,8 @@ def p_f_call(t):
     'f_call : identifier check_function opening_par arguments closing_par semicol make_call_quads'
     t[0] = ('call', t[1], t[3])
 
+    
+
 def p_check_function(t):
     'check_function : '
     if not Scopes.error_found:
@@ -482,6 +487,8 @@ def p_error(t):
         print("❌ Syntax error: unexpected end of file")
         return
     print(f"❌ Syntax error at line {t.lineno}, lexpos {t.lexpos}, unexpected token '{t.value}'.")
+    Ds.error_found = True
+    Scopes.error_found = True
 
 
 parser = yacc.yacc()
@@ -503,7 +510,7 @@ else:
 print("\n--SEMANTICAL ANALYSIS--")
 print("-Quadruples-")
 
-if(not Ds.error_found and not Scopes.error_found):
+if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
     print("Number/Operator/Left/Right/result/result_type")
     count = 1
     for quad in Ds.quad_list:
