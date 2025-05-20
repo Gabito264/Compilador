@@ -15,22 +15,20 @@ Ds = objects()
 
 #PROGRAMA ::= 'program' 'id' ';' VARS? FUNCS* 'main' BODY 'end'
 def p_programa(t):
-    'programa : PROGRAM identifier create_program semicol vars funcs complete_main body END elim_program'
+    'programa : PROGRAM create_program semicol vars funcs complete_main body elim_program'
     t[0] = ('programa', t[2], t[5], t[6], t[8])
 
 def p_create_program(t):
-    'create_program : '
-    Scopes.create_function('program', t[-1])
+    'create_program : identifier'
+    Scopes.create_function('program', t[1])
     Ds.create_main()
 
 def p_complete_main(t):
     'complete_main : MAIN'
-    if not Scopes.error_found:
-        Ds.complete_main()
+    Ds.complete_main()
 
 def p_elim_program(t):
-    'elim_program : '
-    #próximamente
+    'elim_program : END'
     Scopes.eliminate_function()
 
 #Error en definir el nombre del programa
@@ -106,21 +104,20 @@ def p_funcs_empty(t):
     t[0] = []
 
 def p_func(t):
-    'func : VOID identifier create_function opening_par param_list closing_par opening_brack vars create_func_quad body closing_brack semicol end_function'
+    'func : VOID create_function opening_par param_list closing_par opening_brack create_func_quad body closing_brack end_function'
     t[0] = ('func', t[2], t[4], t[7], t[8]) 
 
 def p_create_function(t):
-    'create_function : '
-    Scopes.create_function('Void', t[-1])
+    'create_function : identifier'
+    Scopes.create_function('Void', t[1])
 
 def p_create_func_quad(t):
-    'create_func_quad : '
-    # print(Ds.error_found, Scopes.error_found)
+    'create_func_quad : vars'
     Scopes.update_vars()
     Ds.create_function(Scopes)
 
 def p_end_function(t):
-    'end_function : '
+    'end_function : semicol'
     Ds.create_function_quad(Scopes)
     Scopes.eliminate_function()
 
@@ -331,25 +328,23 @@ def p_cte_float(t):
 
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
-    'f_call : identifier check_function opening_par arguments closing_par semicol make_call_quads'
+    'f_call : check_function opening_par arguments closing_par make_call_quads'
 
     t[0] = ('call', t[1], t[3])
 
-    
-
 def p_check_function(t):
-    'check_function : '
+    'check_function : identifier'
     if not Scopes.error_found:
-        if (t[-1] in Scopes.function_directory):
-            Scopes.name_called = t[-1]
+        if (t[1] in Scopes.function_directory):
+            Scopes.name_called = t[1]
         else:
-            error = "Function " + t[-1] + " Does not exist"
+            error = "Function " + t[1] + " Does not exist"
             Ds.errors_found.append(error)
             Ds.error_found = True
             Scopes.error_found = True
 
 def p_make_call_quads(t):
-    'make_call_quads : '
+    'make_call_quads : semicol'
     if not Scopes.error_found:
         Ds.fcallquads(Scopes)
 
@@ -377,7 +372,7 @@ def p_arguments_empty(t):
 
 #PRINT    ::= 'print' '(' ( 'cte.string' | EXPRESSION ) ( ',' ( 'cte.string' | EXPRESSION ) )* ')' ';'
 def p_print_statement(t):
-    'print_statement : PRINT opening_par print_args closing_par semicol last_print'
+    'print_statement : PRINT opening_par print_args closing_par last_print'
 
 def p_print_args(t):
     'print_args : print_args comma print_arg'
@@ -397,42 +392,42 @@ def p_print_arg_string(t):
         Ds.addPrint()
 
 def p_last_print(t):
-    'last_print : '
+    'last_print : semicol'
     if not Scopes.error_found:
         Ds.addLast_print()
 
 def p_last_print_dummy(t):
-    'last_print_dummy : '
+    'last_print_dummy : semicol'
 
 #Error dentro de expresión de string
 def p_print_error(t):
-    'print_statement : PRINT opening_par error closing_par semicol last_print_dummy'
+    'print_statement : PRINT opening_par error closing_par last_print_dummy'
     global error_list
     error_list.append("At Print call: bad expression")
     
 
 #CYCLE    ::= 'do' BODY 'while' '(' EXPRESSION ')' ';'
 def p_cycle(t):
-    'cycle : DO start_cycle body WHILE opening_par expression closing_par end_cycle semicol'
+    'cycle : start_cycle body WHILE opening_par expression end_cycle semicol'
     
 def p_start_cycle(t):
-    'start_cycle : '
+    'start_cycle : DO'
     Ds.start_cycle()
 
 def p_start_cycle_dummy(t):
-    'start_cycle_dummy : '
+    'start_cycle_dummy : DO'
 
 def p_end_cycle(t):
-    'end_cycle : '
+    'end_cycle : closing_par'
     if not Scopes.error_found:
         Ds.add_cycle()
 
 def p_end_cycle_dummy(t):
-    'end_cycle_dummy : '
+    'end_cycle_dummy : closing_par'
 
 #Error de expresión
 def p_cycle_error(t):
-    'cycle : DO start_cycle_dummy body WHILE opening_par error closing_par end_cycle_dummy semicol'
+    'cycle : start_cycle_dummy body WHILE opening_par error end_cycle_dummy semicol'
     global error_list
     error_list.append("At cycle definition: Bad expression")
     
@@ -440,14 +435,14 @@ def p_cycle_error(t):
 #CONDITION ::= 'if' '(' EXPRESSION ')' BODY ( 'else' BODY )? ';'
 
 def p_condition(t):
-    'condition : IF opening_par expression closing_par gotof body check_else last_goto'
+    'condition : IF opening_par expression gotof body check_else last_goto'
 
 def p_gotof(t):
-    'gotof :'
+    'gotof : closing_par'
     Ds.add_gotof()
 
 def p_gotof_dummy(t):
-    'gotof_dummy :'
+    'gotof_dummy : closing_par'
 
 def p_check_else(t):
     'check_else : else_goto body' 
