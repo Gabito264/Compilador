@@ -15,7 +15,7 @@ Ds = objects()
 
 #PROGRAMA ::= 'program' 'id' ';' VARS? FUNCS* 'main' BODY 'end'
 def p_programa(t):
-    'programa : PROGRAM identifier create_program semicol vars funcs MAIN complete_main body END elim_program'
+    'programa : PROGRAM identifier create_program semicol vars funcs complete_main body END elim_program'
     t[0] = ('programa', t[2], t[5], t[6], t[8])
 
 def p_create_program(t):
@@ -24,8 +24,7 @@ def p_create_program(t):
     Ds.create_main()
 
 def p_complete_main(t):
-    'complete_main : '
-    print("error")
+    'complete_main : MAIN'
     if not Scopes.error_found:
         Ds.complete_main()
 
@@ -333,6 +332,7 @@ def p_cte_float(t):
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
     'f_call : identifier check_function opening_par arguments closing_par semicol make_call_quads'
+
     t[0] = ('call', t[1], t[3])
 
     

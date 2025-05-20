@@ -284,4 +284,6 @@ class objects:
                 if not self.error_found:
                     sq = Scopes.function_directory[name]['start_quad']
                     self.quad_list.append(('gosub', name, None, sq, None))
+
+        self.param_stack = []
         
