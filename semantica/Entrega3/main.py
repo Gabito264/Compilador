@@ -32,11 +32,11 @@ def p_elim_program(t):
     Scopes.eliminate_function()
 
 #Error en definir el nombre del programa
-def p_programa_id_error(t):
-    'programa : PROGRAM error semicol vars funcs MAIN body END'
-    global error_list
-    error_list.append("At program: Incorrect program name")
-    t[0] = ('programa', 'default', t[4], t[5], t[7])
+# def p_programa_id_error(t):
+#     'programa : PROGRAM error semicol vars funcs MAIN body END'
+#     global error_list
+#     error_list.append("At program: Incorrect program name")
+#     t[0] = ('programa', 'default', t[4], t[5], t[7])
 
 #VARS     ::= 'var' ( 'id' ( ',' 'id' )* ':' TYPE ';' )+
 def p_vars(t):
@@ -201,10 +201,10 @@ def p_assign_string(t):
         Ds.add_assignation(t[1], Scopes.scope_stack)
 
 #error en asignación normal, expresiones inválidas
-def p_assign_error(t):
-    "assign : identifier op_assign error semicol" 
-    global error_list
-    error_list.append("At asignation: Incorrect expression")
+# def p_assign_error(t):
+#     "assign : identifier op_assign error semicol" 
+#     global error_list
+#     error_list.append("At asignation: Incorrect expression")
 
 # EXPRESSION ::= EXP ( ( '>' | '<' | '>=' | '<=' | '!=' | '==' ) EXP )?
 def p_expression(t):
