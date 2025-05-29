@@ -111,6 +111,7 @@ def p_func(t):
 
 def p_create_function(t):
     'create_function : identifier'
+    Scopes.current_name = t[1]
     Scopes.create_function('Void', t[1])
 
 def p_create_func_quad(t):

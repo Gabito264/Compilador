@@ -10,6 +10,7 @@ class program_functions:
     n_local = 0
     param_order = []
     name_called = ""
+    current_name = ""
 
     def __init__(self):
         self.function_directory = {}
@@ -19,7 +20,8 @@ class program_functions:
         self.n_params = 0
         self.n_local = 0
         self.param_order = []
-        self.name_called = []
+        self.name_called = ""
+        self.current_name = ""
     
     def create_function(self, return_type, name):
         self.n_params = 0
@@ -53,7 +55,7 @@ class program_functions:
                     self.errors.append(f"Variable '{name}' already declared in current scope (line {lineno})")
                     self.error_found = True
                 else:
-                    if self.name_called == "":
+                    if self.current_name != "":
                         segment = get_segment("local", var_type)
                     else:
                         segment = get_segment("global", var_type)
