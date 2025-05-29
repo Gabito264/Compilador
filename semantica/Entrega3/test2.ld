@@ -1,27 +1,13 @@
-program condition_test;
-var 
-        A, B, C, D : int ; F: string;
-main {
-    A = 7;
-    B = 1;
-    C = 12;
-    D = 10;
+program function_calls_and_print;
+var A, B, C, D : int ; F : string;
 
-    if (A + B > D)
-    {
-        if (A < B)
-        {
-            A = 0;
-            B = B + D;
-        }
-        else
-        {
-            C = A + B;
-        };
-    }
-    else
-    {
-        A = B + C;
-    };
-    D = B + A * C;
-} end
+void generic(A:int, C:float, E: float)[
+var F, G: int;
+{
+    print("hola");
+}
+];
+main {
+    print("hola");
+    generic(10, 20.5, 2.5+1 + 2); @error por falta de ;
+ } end

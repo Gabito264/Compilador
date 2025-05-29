@@ -1,6 +1,4 @@
 from semantic_cube import semantic_cube
-from memory import get_segment
-
 class program_functions:
     function_directory = {}
     scope_stack = []
@@ -33,7 +31,6 @@ class program_functions:
                 'var_table' : {},
                 'param_order' : [],
                 'start_quad' : -1,
-                'address' : None,
             }
             self.scope_stack.append(self.function_directory[name])
         else:
@@ -45,7 +42,7 @@ class program_functions:
         if (not self.error_found):
             self.scope_stack.pop()
 
-    def declare_vars_in_scope(self, id_list, var_type, lineno, is_param, mem_manager):
+    def declare_vars_in_scope(self, id_list, var_type, lineno, is_param):
         if not self.error_found:
             current_scope = self.scope_stack[-1]['var_table']
             for name in id_list:
@@ -53,12 +50,6 @@ class program_functions:
                     self.errors.append(f"Variable '{name}' already declared in current scope (line {lineno})")
                     self.error_found = True
                 else:
-                    if self.name_called == "":
-                        segment = get_segment("local", var_type)
-                    else:
-                        segment = get_segment("global", var_type)
-                    
-                    address = mem_manager.allocate(segment)
                     current_scope[name] = {
                         'scope' : 'local',
                         'type': var_type,
@@ -66,10 +57,7 @@ class program_functions:
                         'declared_line': lineno,
                         'is_null' : True,
                         'is_param' : is_param,
-                        'address' : address,
                     }
-                    if is_param:
-                        current_scope[name]['is_null'] = False 
 
     def update_vars(self):
         if (not self.error_found):
@@ -113,13 +101,13 @@ class objects:
             else:
                 return False
     #tomamos el nombre, el tipo, y si el valor no es nulo o si sí existe
-    def add_to_operand_stack(self, name, type, not_null, address=None):
+    def add_to_operand_stack(self, name, type, not_null):
         if not self.error_found:
-            self.operand_stack.append((address if address is not None else name, type, not_null))
+            self.operand_stack.append((name, type, not_null))
         # print(self.operand_stack)
 
     #Cuando entramos en una gramática con sólo expresión queda un leftover
-    def add_to_quad_list(self, operator, mem_manager):
+    def add_to_quad_list(self, operator):
         if not self.error_found:
             right, r_type, r_valid = self.operand_stack.pop()
             left, l_type, l_valid= self.operand_stack.pop()
@@ -127,9 +115,9 @@ class objects:
             if (l_valid and r_valid and result != "error"):
                 self.t_count +=1
                 
-                temp_addr = mem_manager.allocate(get_segment("temp", result)) + 1
-                self.operand_stack.append((temp_addr, result, 1))
-                self.quad_list.append((operator, left, right, temp_addr, result))
+                temp = "t_" + str(self.t_count)
+                self.operand_stack.append((temp, result, 1))
+                self.quad_list.append((operator, left, right, temp, result))
             else:
                 #print("Invalid operation between " , l_type," and " ,r_type)
                 error = "Invalid operation between " + str(l_type) + " and " + str(r_type)
@@ -144,10 +132,9 @@ class objects:
             if( name in scope_stack[-1]['var_table'] and is_valid):
                 #variable existe, verificamos que sea válida la asignación
                 var = scope_stack[-1]['var_table'][name]
-                var_address = var['address']
                 if (last_type != 'bool' and semantic_cube[var['type']]['='][last_type] != 'error'):
                     scope_stack[-1]['var_table'][name]['is_null'] = False
-                    result = ('=', last, None, var_address, semantic_cube[var['type']]['='][last_type])
+                    result = ('=', last, None, name, semantic_cube[var['type']]['='][last_type])
                     self.quad_list.append(result)
                 else:
                     #print("Invalid assignment, ", var['type'], "cannot be", last_type)

@@ -1,13 +1,10 @@
-program function_calls_and_print;
-var A, B, C, D : int ; F : string;
-
-void generic(A:int, C:float, E: float)[
-var F, G: int;
-{
-    print("hola");
+program mprogram;
+var a, b : int;
+c : float;
+main
+{ a = 7;
+b = 3;
+c = a / b + 2;
+print(c);
 }
-];
-main {
-    print("hola");
-    generic(10, 20.5, 2.5+1 + 2);
- } end
+end

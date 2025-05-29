@@ -1,7 +1,6 @@
 from lexer import tokens, lexer, input_program
 from semantic_cube import semantic_cube
 from semantic_structures import program_functions, objects
-from memory import MemoryManager, ConstantTable, get_segment
 import ply.yacc as yacc
 
 start = 'programa'
@@ -11,9 +10,8 @@ syntax_error = 0
 error_list = []
 
 Scopes = program_functions()
+
 Ds = objects()
-mem_manager = MemoryManager()
-const_table = ConstantTable(mem_manager)
 
 #PROGRAMA ::= 'program' 'id' ';' VARS? FUNCS* 'main' BODY 'end'
 def p_programa(t):
@@ -34,11 +32,11 @@ def p_elim_program(t):
     Scopes.eliminate_function()
 
 #Error en definir el nombre del programa
-# def p_programa_id_error(t):
-#     'programa : PROGRAM error semicol vars funcs MAIN body END'
-#     global error_list
-#     error_list.append("At program: Incorrect program name")
-#     t[0] = ('programa', 'default', t[4], t[5], t[7])
+def p_programa_id_error(t):
+    'programa : PROGRAM error semicol vars funcs MAIN body END'
+    global error_list
+    error_list.append("At program: Incorrect program name")
+    t[0] = ('programa', 'default', t[4], t[5], t[7])
 
 #VARS     ::= 'var' ( 'id' ( ',' 'id' )* ':' TYPE ';' )+
 def p_vars(t):
@@ -51,12 +49,12 @@ def p_vars_empty(t):
 
 def p_definition(t):
     'var_definition : id_list twopoint type semicol var_definition'
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False, mem_manager)
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False)
     t[0] = [('var_decl', t[1], t[3])] + t[5]
     
 def p_definition_once(t):
     'var_definition : id_list twopoint type semicol'
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False, mem_manager)
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False)
     t[0] = [('var_decl', t[1], t[3])]
 
 def p_id_list(t):
@@ -140,7 +138,7 @@ def p_param(t):
     t[0] = (t[1], t[3])
     Scopes.n_params+=1
     Scopes.param_order.append(t[3])
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True, mem_manager)
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True)
 
 #Error al definir func
 # def p_func_error(t):
@@ -199,15 +197,14 @@ def p_assign(t):
 def p_assign_string(t):
     'assign : identifier op_assign const_string semicol'
     if not Scopes.error_found:
-        addr = const_table.get_or_add(t[3], "string")
-        Ds.add_to_operand_stack(t[3], 'string', 1, addr)
+        Ds.add_to_operand_stack(t[3], 'string', 1)
         Ds.add_assignation(t[1], Scopes.scope_stack)
 
 #error en asignación normal, expresiones inválidas
-# def p_assign_error(t):
-#     "assign : identifier op_assign error semicol" 
-#     global error_list
-#     error_list.append("At asignation: Incorrect expression")
+def p_assign_error(t):
+    "assign : identifier op_assign error semicol" 
+    global error_list
+    error_list.append("At asignation: Incorrect expression")
 
 # EXPRESSION ::= EXP ( ( '>' | '<' | '>=' | '<=' | '!=' | '==' ) EXP )?
 def p_expression(t):
@@ -215,37 +212,37 @@ def p_expression(t):
     
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
-    Ds.add_to_quad_list("<", mem_manager)
+    Ds.add_to_quad_list("<")
 
 def p_expression_more(t):
     'expression : exp op_more_than exp'
-    Ds.add_to_quad_list(">", mem_manager)
+    Ds.add_to_quad_list(">")
 
 def p_expression_less_equal(t):
     'expression : exp op_lessthan_equal exp'
-    Ds.add_to_quad_list("<=", mem_manager)
+    Ds.add_to_quad_list("<=")
 
 def p_expression_more_equal(t):
     'expression : exp op_morethan_equal exp'
-    Ds.add_to_quad_list(">=", mem_manager)
+    Ds.add_to_quad_list(">=")
 
 def p_expression_equals(t):
     'expression : exp op_equals exp'
-    Ds.add_to_quad_list("==", mem_manager)
+    Ds.add_to_quad_list("==")
 
 def p_expression_not_equal(t):
     'expression : exp op_not_equal exp'
-    Ds.add_to_quad_list("!=", mem_manager)
+    Ds.add_to_quad_list("!=")
 
 #EXP      ::= TERM ( ( '+' | '-' ) TERM )*
 def p_exp_suma(t):
     'exp : exp op_plus term'
-    Ds.add_to_quad_list("+", mem_manager)
+    Ds.add_to_quad_list("+")
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
     # t[0] = t[1] - t[3]
-    Ds.add_to_quad_list("-", mem_manager)
+    Ds.add_to_quad_list("-")
 
 def p_exp_term(t):
     'exp : term'
@@ -253,11 +250,11 @@ def p_exp_term(t):
 #TERM     ::= FACTOR ( ( '*' | '/' ) FACTOR )*
 def p_term_mult(t):
     'term : term op_mult factor'
-    Ds.add_to_quad_list("*", mem_manager)
+    Ds.add_to_quad_list("*")
 
 def p_term_div(t):
     'term : term op_div factor'
-    Ds.add_to_quad_list("/", mem_manager)
+    Ds.add_to_quad_list("/")
 
 def p_term_factor(t):
     'term : factor'
@@ -274,10 +271,9 @@ def p_factor_plus_id(t):
         name = t[2]
         var = name in Scopes.scope_stack[-1]['var_table']
         if (var and Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False):
-            address = Scopes.scope_stack[-1]['var_table'][name]["address"]
-            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1, address)
+            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
         else:
-            Ds.add_to_operand_stack(name, 'error', 0, None)
+            Ds.add_to_operand_stack(name, 'error', 0)
             error = "Variable " + name + " Does not exist in scope or has not been defined"
             Ds.errors_found.append(error)
             Ds.error_found = True
@@ -293,8 +289,7 @@ def p_factor_minus_id(t):
         name = t[2]
         var = name in Scopes.scope_stack[-1]['var_table']
         if (var and Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False):
-            address = Scopes.scope_stack[-1]['var_table'][name]["address"]
-            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1, address)
+            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
         else:
             Ds.add_to_operand_stack(name, 'error', 0)
             error = "Variable " + name + " Does not exist in scope"
@@ -311,11 +306,10 @@ def p_factor_id(t):
     if not Scopes.error_found:
         name = t[1]
         var = name in Scopes.scope_stack[-1]['var_table']
-        if (var and Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False):
-            address = Scopes.scope_stack[-1]['var_table'][name]["address"]
-            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1, address)
+        if (var and (Scopes.scope_stack[-1]['var_table'][name]['is_null'] == False or Scopes.scope_stack[-1]['var_table'][name]['is_null'] == True)):
+            Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1)
         else:
-            Ds.add_to_operand_stack(name, 'error', 0, None)
+            Ds.add_to_operand_stack(name, 'error', 0)
             error = "Variable " + name + " Does not exist in scope"
             Ds.errors_found.append(error)
             Ds.error_found = True
@@ -326,13 +320,11 @@ def p_factor_cte(t):
 #CTE      ::= 'cte_int' | 'cte_float'
 def p_cte_int(t):
     'cte : const_int'
-    addr = const_table.get_or_add(t[1], "int")
-    Ds.add_to_operand_stack(t[1], "int", 1, addr)
+    Ds.add_to_operand_stack(t[1], "int", 1)
     
 def p_cte_float(t):
     'cte : const_float'
-    addr = const_table.get_or_add(t[1], "float")
-    Ds.add_to_operand_stack(t[1], "float", 1, addr)
+    Ds.add_to_operand_stack(t[1], "float", 1)
 
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
@@ -396,8 +388,7 @@ def p_print_arg_expression(t):
 def p_print_arg_string(t):
     'print_arg : const_string'
     if not Scopes.error_found:
-        addr = const_table.get_or_add(t[1], "str")
-        Ds.add_to_operand_stack(t[1], 'str', 1, addr)
+        Ds.add_to_operand_stack(t[1], 'string', 1)
         Ds.addPrint()
 
 def p_last_print(t):
@@ -520,40 +511,16 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
     for quad in Ds.quad_list:
         print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
         count+=1
-
     with open('output.txt', 'w') as f:
         for tupla in Ds.quad_list:
             f.write(str(tupla) + '\n')
 
-    for segment, base in mem_manager.counters.items():
-        start = {
-            'global_int': 1000,
-            'global_float': 2000,
-            'global_string': 3000,
-            'global_void': 4000,
-            'local_int': 7000,
-            'local_float': 8000,
-            'local_string': 9000,
-            'temp_int': 12000,
-            'temp_float': 13000,
-            'temp_bool': 14000,
-            'cte_int': 17000,
-            'cte_float': 18000,
-            'cte_string': 19000,
-        }[segment]
-        used = base - start
-        print("{:<15} {:<10}".format(segment, used))
-
-
-    # print("--Symbol Table--")
+    print("--Symbol Table--")
 
     # for scope in Scopes.function_directory:
     #     print(scope)
     #     for var in Scopes.function_directory[scope]['var_table']:
     #         print ( var ,Scopes.function_directory[scope]['var_table'][var])
-    for x in const_table.table:
-        print(x, const_table.table[x])    
-    
 else:
     print("--Errors Found--")
     for x in Ds.errors_found:
@@ -561,6 +528,7 @@ else:
     for x in Scopes.errors:
         print(x)
 
-# print(const_table.table)
-
-# print(mem_manager.counters)
+for scope in Scopes.function_directory:
+        print(scope)
+        for var in Scopes.function_directory[scope]['var_table']:
+            print ( var ,Scopes.function_directory[scope]['var_table'][var])
