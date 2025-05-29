@@ -24,6 +24,7 @@ class program_functions:
         self.current_name = ""
     
     def create_function(self, return_type, name):
+        #Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria cuando es un void.
         self.n_params = 0
         self.n_local = 0
         self.param_order = []
@@ -302,3 +303,4 @@ class objects:
 
         self.param_stack = []
         
+#Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria.

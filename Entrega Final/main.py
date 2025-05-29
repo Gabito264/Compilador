@@ -565,3 +565,5 @@ else:
 # print(const_table.table)
 
 # print(mem_manager.counters)
+for x in Scopes.function_directory:
+    print(x, Scopes.function_directory[x])
