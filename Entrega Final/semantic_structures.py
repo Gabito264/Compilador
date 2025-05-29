@@ -303,4 +303,4 @@ class objects:
 
         self.param_stack = []
         
-#Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria.
+#Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria. Agregar Sub?
