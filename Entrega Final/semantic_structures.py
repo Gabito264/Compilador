@@ -22,12 +22,14 @@ class program_functions:
         self.param_order = []
         self.name_called = ""
         self.current_name = ""
-    
+    #Toma en cuenta que en las funciones hay que separar en local int, validar al final con contar las variables.
     def create_function(self, return_type, name):
         #Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria cuando es un void.
         self.n_params = 0
         self.n_local = 0
         self.param_order = []
+
+        
         if name not in self.function_directory:
             self.function_directory[name] ={
                 'return_type' : return_type,
@@ -130,7 +132,7 @@ class objects:
             if (l_valid and r_valid and result != "error"):
                 self.t_count +=1
                 
-                temp_addr = mem_manager.allocate(get_segment("temp", result)) + 1
+                temp_addr = mem_manager.allocate(get_segment("temp", result))
                 self.operand_stack.append((temp_addr, result, 1))
                 self.quad_list.append((operator, left, right, temp_addr, result))
             else:

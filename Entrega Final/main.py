@@ -216,37 +216,46 @@ def p_expression(t):
     
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
-    Ds.add_to_quad_list("<", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("<", mem_manager)
 
 def p_expression_more(t):
     'expression : exp op_more_than exp'
-    Ds.add_to_quad_list(">", mem_manager)
+    #agregar validación
+    if not Scopes.error_found:
+        Ds.add_to_quad_list(">", mem_manager)
 
 def p_expression_less_equal(t):
     'expression : exp op_lessthan_equal exp'
-    Ds.add_to_quad_list("<=", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("<=", mem_manager)
 
 def p_expression_more_equal(t):
     'expression : exp op_morethan_equal exp'
-    Ds.add_to_quad_list(">=", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list(">=", mem_manager)
 
 def p_expression_equals(t):
     'expression : exp op_equals exp'
-    Ds.add_to_quad_list("==", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("==", mem_manager)
 
 def p_expression_not_equal(t):
     'expression : exp op_not_equal exp'
-    Ds.add_to_quad_list("!=", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("!=", mem_manager)
 
 #EXP      ::= TERM ( ( '+' | '-' ) TERM )*
 def p_exp_suma(t):
     'exp : exp op_plus term'
-    Ds.add_to_quad_list("+", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("+", mem_manager)
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
     # t[0] = t[1] - t[3]
-    Ds.add_to_quad_list("-", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("-", mem_manager)
 
 def p_exp_term(t):
     'exp : term'
@@ -254,11 +263,13 @@ def p_exp_term(t):
 #TERM     ::= FACTOR ( ( '*' | '/' ) FACTOR )*
 def p_term_mult(t):
     'term : term op_mult factor'
-    Ds.add_to_quad_list("*", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("*", mem_manager)
 
 def p_term_div(t):
     'term : term op_div factor'
-    Ds.add_to_quad_list("/", mem_manager)
+    if not Scopes.error_found:
+        Ds.add_to_quad_list("/", mem_manager)
 
 def p_term_factor(t):
     'term : factor'
@@ -286,7 +297,8 @@ def p_factor_plus_id(t):
 
 def p_factor_plus_cte(t):
     'factor : op_plus cte'
-    Ds.add_single_to_quad("+")
+    if not Scopes.error_found:
+        Ds.add_single_to_quad("+")
 
 def p_factor_minus_id(t):
     'factor : op_minus identifier'
@@ -305,7 +317,8 @@ def p_factor_minus_id(t):
 
 def p_factor_minus_cte(t):
     'factor : op_minus cte'
-    Ds.add_single_to_quad("-")
+    if not Scopes.error_found:
+        Ds.add_single_to_quad("-")
 
 def p_factor_id(t):
     'factor : identifier'
@@ -397,7 +410,7 @@ def p_print_arg_expression(t):
 def p_print_arg_string(t):
     'print_arg : const_string'
     if not Scopes.error_found:
-        addr = const_table.get_or_add(t[1], "str")
+        addr = const_table.get_or_add(t[1], "string")
         Ds.add_to_operand_stack(t[1], 'str', 1, addr)
         Ds.addPrint()
 

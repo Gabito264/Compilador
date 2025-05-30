@@ -1,0 +1,34 @@
+
+
+
+
+
+
+1 17000
+"hello " 19000
+7 17001
+3 17002
+5 17003
+"w" 19001
+4 17004
+4.5 18000
+1.5 18001
+8 17005
+"texto " 19002
+58 17006
+9 17007
+"xsxsxs" 19003
+
+global_int      1
+global_float    2
+global_string   1
+global_void     0
+local_int       4
+local_float     1
+local_string    0
+temp_int        6
+temp_float      1
+temp_bool       3
+cte_int         8
+cte_float       2
+cte_string      4
