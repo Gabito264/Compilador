@@ -15,11 +15,11 @@ void fact (n : int, a : int)
    }
 ];
  
- 
+
 void some_other( n : int )
 [  var xf : float;
    {  @n = "woooooooooo 5"; 
-      print("hello "); 
+      print("hello ", 7+5); 
       xf = 7;
  
       fact(3, 1);

@@ -22,7 +22,7 @@ def p_programa(t):
 
 def p_create_program(t):
     'create_program : identifier'
-    Scopes.create_function('program', t[1])
+    Scopes.create_function('program', t[1], mem_manager)
     Ds.create_main()
 
 def p_complete_main(t):
@@ -51,12 +51,12 @@ def p_vars_empty(t):
 
 def p_definition(t):
     'var_definition : id_list twopoint type semicol var_definition'
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False, mem_manager)
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False, Scopes.scope_stack[-1]["addresses"])
     t[0] = [('var_decl', t[1], t[3])] + t[5]
     
 def p_definition_once(t):
     'var_definition : id_list twopoint type semicol'
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False, mem_manager)
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), False, Scopes.scope_stack[-1]["addresses"])
     t[0] = [('var_decl', t[1], t[3])]
 
 def p_id_list(t):
@@ -112,7 +112,7 @@ def p_func(t):
 def p_create_function(t):
     'create_function : identifier'
     Scopes.current_name = t[1]
-    Scopes.create_function('Void', t[1])
+    Scopes.create_function('Void', t[1], mem_manager)
 
 def p_create_func_quad(t):
     'create_func_quad : vars'
@@ -141,7 +141,7 @@ def p_param(t):
     t[0] = (t[1], t[3])
     Scopes.n_params+=1
     Scopes.param_order.append(t[3])
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True, mem_manager)
+    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True, Scopes.scope_stack[-1]["addresses"])
 
 #Error al definir func
 # def p_func_error(t):
@@ -217,45 +217,45 @@ def p_expression(t):
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("<", mem_manager)
+        Ds.add_to_quad_list("<", Scopes.scope_stack[-1]["addresses"])
 
 def p_expression_more(t):
     'expression : exp op_more_than exp'
     #agregar validación
     if not Scopes.error_found:
-        Ds.add_to_quad_list(">", mem_manager)
+        Ds.add_to_quad_list(">", Scopes.scope_stack[-1]["addresses"])
 
 def p_expression_less_equal(t):
     'expression : exp op_lessthan_equal exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("<=", mem_manager)
+        Ds.add_to_quad_list("<=", Scopes.scope_stack[-1]["addresses"])
 
 def p_expression_more_equal(t):
     'expression : exp op_morethan_equal exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list(">=", mem_manager)
+        Ds.add_to_quad_list(">=", Scopes.scope_stack[-1]["addresses"])
 
 def p_expression_equals(t):
     'expression : exp op_equals exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("==", mem_manager)
+        Ds.add_to_quad_list("==", Scopes.scope_stack[-1]["addresses"])
 
 def p_expression_not_equal(t):
     'expression : exp op_not_equal exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("!=", mem_manager)
+        Ds.add_to_quad_list("!=", Scopes.scope_stack[-1]["addresses"])
 
 #EXP      ::= TERM ( ( '+' | '-' ) TERM )*
 def p_exp_suma(t):
     'exp : exp op_plus term'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("+", mem_manager)
+        Ds.add_to_quad_list("+", Scopes.scope_stack[-1]["addresses"])
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
     # t[0] = t[1] - t[3]
     if not Scopes.error_found:
-        Ds.add_to_quad_list("-", mem_manager)
+        Ds.add_to_quad_list("-", Scopes.scope_stack[-1]["addresses"])
 
 def p_exp_term(t):
     'exp : term'
@@ -264,12 +264,12 @@ def p_exp_term(t):
 def p_term_mult(t):
     'term : term op_mult factor'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("*", mem_manager)
+        Ds.add_to_quad_list("*", Scopes.scope_stack[-1]["addresses"])
 
 def p_term_div(t):
     'term : term op_div factor'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("/", mem_manager)
+        Ds.add_to_quad_list("/", Scopes.scope_stack[-1]["addresses"])
 
 def p_term_factor(t):
     'term : factor'
@@ -359,6 +359,7 @@ def p_check_function(t):
     if not Scopes.error_found:
         if (t[1] in Scopes.function_directory):
             Scopes.name_called = t[1]
+            Ds.quad_list.append(("sub", Scopes.function_directory[t[1]]["address"], None, None, None))
         else:
             error = "Function " + t[1] + " Does not exist"
             Ds.errors_found.append(error)
@@ -534,11 +535,8 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
     for quad in Ds.quad_list:
         print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
         count+=1
-
-    with open('output.txt', 'w') as f:
-        for tupla in Ds.quad_list:
-            f.write(str(tupla) + '\n')
-
+    
+    global_counts = {}
     for segment, base in mem_manager.counters.items():
         start = {
             'global_int': 1000,
@@ -556,8 +554,57 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
             'cte_string': 19000,
         }[segment]
         used = base - start
-        print("{:<15} {:<10}".format(segment, used))
+        global_counts[segment] = used
 
+    # Obtenemos contadores de las variables de cada función, sumando los valores de main a nuestros datos globales
+    for x in Scopes.function_directory:
+        print(x, Scopes.function_directory[x]["address"])
+        y = Scopes.function_directory[x]["addresses"]
+
+        for segment, base in y.counters.items():
+            start = {
+                'global_int': 1000,
+                'global_float': 2000,
+                'global_string': 3000,
+                'global_void': 4000,
+                'local_int': 7000,
+                'local_float': 8000,
+                'local_string': 9000,
+                'temp_int': 12000,
+                'temp_float': 13000,
+                'temp_bool': 14000,
+                'cte_int': 17000,
+                'cte_float': 18000,
+                'cte_string': 19000,
+            }[segment]
+            used = base - start
+            if Scopes.function_directory[x]["return_type"] == "program":
+                global_counts[segment] += used
+            else:
+                Scopes.function_directory[x]["addresses"].counters[segment] = used
+
+    
+    # Imprimimos contadores de las variables por función
+    print("\nFunction Addresses:")
+    for x in Scopes.function_directory:
+        if (Scopes.function_directory[x]["return_type"] != "program"):
+            print(x, Scopes.function_directory[x]["address"])
+            print("params", Scopes.function_directory[x]["n_params"])
+            print("local_int", Scopes.function_directory[x]["addresses"].counters["local_int"])
+            print("local_float", Scopes.function_directory[x]["addresses"].counters["local_float"])
+            print("local_string", Scopes.function_directory[x]["addresses"].counters["local_string"])
+            print("temp_int", Scopes.function_directory[x]["addresses"].counters["temp_int"])
+            print("temp_float", Scopes.function_directory[x]["addresses"].counters["temp_float"])
+            print("temp_bool", Scopes.function_directory[x]["addresses"].counters["temp_bool"])
+        else:
+            print(x, Scopes.function_directory[x]["address"])
+            for y in global_counts:
+                print(y, global_counts[y])
+        
+        print("")
+
+    for x in const_table.table:
+        print(x, const_table.table[x])    
 
     # print("--Symbol Table--")
 
@@ -565,8 +612,47 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
     #     print(scope)
     #     for var in Scopes.function_directory[scope]['var_table']:
     #         print ( var ,Scopes.function_directory[scope]['var_table'][var])
-    for x in const_table.table:
-        print(x, const_table.table[x])    
+
+    #Pasamos los datos necesarios de la memoria a el output
+     
+    with open('output.txt', 'w') as f:
+        # for tupla in Ds.quad_list:
+        #     f.write(str(tupla) + '\n')
+        
+        #pasamos constantes
+        for x in const_table.table:
+            f.write(str(x) +" " + str(const_table.table[x]) + '\n')  
+        
+        #pasamos variables de funciones
+        f.write('\n') 
+        for x in Scopes.function_directory:
+            if (Scopes.function_directory[x]["return_type"] != "program"):
+                f.write( str(Scopes.function_directory[x]["address"]) + "\n")
+                f.write("params" + " " + str(Scopes.function_directory[x]["n_params"]) + "\n" )
+                f.write("local_int" + " " + str(Scopes.function_directory[x]["addresses"].counters["local_int"]) + "\n")
+                f.write("local_float" + " " + str(Scopes.function_directory[x]["addresses"].counters["local_float"]) + "\n")
+                f.write("local_string" + " " + str( Scopes.function_directory[x]["addresses"].counters["local_string"]) + "\n")
+                f.write("temp_int" + " " + str(Scopes.function_directory[x]["addresses"].counters["temp_int"]) + "\n" )
+                f.write("temp_float" + " " + str(Scopes.function_directory[x]["addresses"].counters["temp_float"]) + "\n")
+                f.write("temp_bool"+ " " + str(Scopes.function_directory[x]["addresses"].counters["temp_bool"]) + "\n")
+            else:
+                # f.write( str(x) + " " + str(Scopes.function_directory[x]["address"]) + "\n")
+                for y in global_counts:
+                    f.write(str(y) + " " + str(global_counts[y]) + "\n")
+            f.write('\n') 
+        
+        #Pasamos los cuádruplos
+        count = 1
+        for tupla in Ds.quad_list:
+            f.write(str(count) + " ")
+            for item in range(len(tupla)-1):
+                if tupla[item] == None:
+                    f.write( "-1 ")
+                else:
+                    f.write( str(tupla[item])  + " ")
+            f.write("\n")
+            count +=1
+
     
 else:
     print("--Errors Found--")
@@ -576,7 +662,3 @@ else:
         print(x)
 
 # print(const_table.table)
-
-# print(mem_manager.counters)
-for x in Scopes.function_directory:
-    print(x, Scopes.function_directory[x])

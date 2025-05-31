@@ -21,6 +21,23 @@ class MemoryManager:
         self.counters[segment] += 1
         return addr
 
+    def get_initial_value(key):
+        if key.startswith('global'):
+            return {'global_int': 1000, 'global_float': 2000, 'global_string': 3000, 'global_void': 4000}[key]
+        elif key.startswith('local'):
+            return {'local_int': 7000, 'local_float': 8000, 'local_string': 9000}[key]
+        elif key.startswith('temp'):
+            return {'temp_int': 12000, 'temp_float': 13000, 'temp_bool': 14000}[key]
+        elif key.startswith('cte'):
+            return {'cte_int': 17000, 'cte_float': 18000, 'cte_string': 19000}[key]
+        return 0
+
+    def add_counters_from(self, other_memory):
+        for key in self.counters:
+            if key in other_memory.counters:
+                self.counters[key] += (other_memory.counters[key] - self.get_initial_value(key))
+
+
 def get_segment(scope, var_type):
     if scope == "global":
         return f"global_{var_type}"

@@ -1,5 +1,5 @@
 from semantic_cube import semantic_cube
-from memory import get_segment
+from memory import MemoryManager,get_segment
 
 class program_functions:
     function_directory = {}
@@ -23,13 +23,20 @@ class program_functions:
         self.name_called = ""
         self.current_name = ""
     #Toma en cuenta que en las funciones hay que separar en local int, validar al final con contar las variables.
-    def create_function(self, return_type, name):
+    def create_function(self, return_type, name, mem_manager):
         #Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria cuando es un void.
         self.n_params = 0
         self.n_local = 0
         self.param_order = []
 
-        
+        #Creamos la memoria para guardar las variables locales y temporales
+        f_memory = MemoryManager()
+
+        #Creamos para darle dirección de memoria a la función si es un void (el main no lleva memoria que yo sepa pq usa la general)
+        f_address = None
+        if return_type != "program":
+            f_address = mem_manager.allocate("global_void")
+
         if name not in self.function_directory:
             self.function_directory[name] ={
                 'return_type' : return_type,
@@ -38,7 +45,8 @@ class program_functions:
                 'var_table' : {},
                 'param_order' : [],
                 'start_quad' : -1,
-                'address' : None,
+                'address' : f_address,
+                'addresses' : f_memory,
             }
             self.scope_stack.append(self.function_directory[name])
         else:
@@ -301,7 +309,8 @@ class objects:
 
                 if not self.error_found:
                     sq = Scopes.function_directory[name]['start_quad']
-                    self.quad_list.append(('gosub', name, None, sq, None))
+                    addr = Scopes.function_directory[name]['address']
+                    self.quad_list.append(('gosub', addr, None, sq, None))
 
         self.param_stack = []
         
