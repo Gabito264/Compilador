@@ -278,12 +278,12 @@ def p_factor_plus_id(t):
             error = "Variable " + name + " Does not exist in scope or has not been defined at line " + str(t.lineno(2)) 
             Ds.errors_found.append(error)
             Ds.error_found = True
-        Ds.add_single_to_quad("+", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+        # Ds.add_single_to_quad("+", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_factor_plus_cte(t):
     'factor : op_plus cte'
-    if not Scopes.error_found:
-        Ds.add_single_to_quad("+", Scopes.scope_stack[-1]["addresses"], t.lineno(1))
+    # if not Scopes.error_found:
+    #     Ds.add_single_to_quad("+", Scopes.scope_stack[-1]["addresses"], t.lineno(1))
 
 
 def p_factor_minus_id(t):
