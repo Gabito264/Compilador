@@ -22,7 +22,7 @@ def p_programa(t):
 
 def p_create_program(t):
     'create_program : identifier'
-    Scopes.create_function('program', t[1], mem_manager)
+    Scopes.create_function('program', t[1], mem_manager, t.lineno(1))
     Ds.create_main()
 
 def p_complete_main(t):
@@ -32,13 +32,6 @@ def p_complete_main(t):
 def p_elim_program(t):
     'elim_program : END'
     Scopes.eliminate_function()
-
-#Error en definir el nombre del programa
-# def p_programa_id_error(t):
-#     'programa : PROGRAM error semicol vars funcs MAIN body END'
-#     global error_list
-#     error_list.append("At program: Incorrect program name")
-#     t[0] = ('programa', 'default', t[4], t[5], t[7])
 
 #VARS     ::= 'var' ( 'id' ( ',' 'id' )* ':' TYPE ';' )+
 def p_vars(t):
@@ -112,7 +105,7 @@ def p_func(t):
 def p_create_function(t):
     'create_function : identifier'
     Scopes.current_name = t[1]
-    Scopes.create_function('Void', t[1], mem_manager)
+    Scopes.create_function('Void', t[1], mem_manager, t.lineno(1))
 
 def p_create_func_quad(t):
     'create_func_quad : vars'
@@ -142,14 +135,6 @@ def p_param(t):
     Scopes.n_params+=1
     Scopes.param_order.append(t[3])
     Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True, Scopes.scope_stack[-1]["addresses"])
-
-#Error al definir func
-# def p_func_error(t):
-#     'func : VOID identifier opening_par error closing_par opening_brack vars body closing_brack semicol'
-#     global error_list
-#     error_list.append("At function creation: Bad list of parameters")
-    
-#     t[0] = []
 
 #BODY     ::= '{' STATEMENT* '}'
 def p_body(t):
@@ -195,20 +180,14 @@ def p_statement_print(t):
 def p_assign(t):
     'assign : identifier op_assign expression semicol'
     if not Scopes.error_found:
-        Ds.add_assignation(t[1], Scopes.scope_stack)
+        Ds.add_assignation(t[1], Scopes.scope_stack, t.lineno(1))
 
 def p_assign_string(t):
     'assign : identifier op_assign const_string semicol'
     if not Scopes.error_found:
         addr = const_table.get_or_add(t[3], "string")
         Ds.add_to_operand_stack(t[3], 'string', 1, addr)
-        Ds.add_assignation(t[1], Scopes.scope_stack)
-
-#error en asignación normal, expresiones inválidas
-# def p_assign_error(t):
-#     "assign : identifier op_assign error semicol" 
-#     global error_list
-#     error_list.append("At asignation: Incorrect expression")
+        Ds.add_assignation(t[1], Scopes.scope_stack, t.lineno(1))
 
 # EXPRESSION ::= EXP ( ( '>' | '<' | '>=' | '<=' | '!=' | '==' ) EXP )?
 def p_expression(t):
@@ -217,45 +196,50 @@ def p_expression(t):
 def p_expression_less(t):
     'expression : exp op_lesser_than exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("<", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("<", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_expression_more(t):
     'expression : exp op_more_than exp'
     #agregar validación
     if not Scopes.error_found:
-        Ds.add_to_quad_list(">", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list(">", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+
 
 def p_expression_less_equal(t):
     'expression : exp op_lessthan_equal exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("<=", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("<=", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+
 
 def p_expression_more_equal(t):
     'expression : exp op_morethan_equal exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list(">=", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list(">=", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_expression_equals(t):
     'expression : exp op_equals exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("==", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("==", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+
 
 def p_expression_not_equal(t):
     'expression : exp op_not_equal exp'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("!=", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("!=", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+
 
 #EXP      ::= TERM ( ( '+' | '-' ) TERM )*
 def p_exp_suma(t):
     'exp : exp op_plus term'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("+", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("+", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_exp_minus(t):
     'exp : exp op_minus term'
     # t[0] = t[1] - t[3]
     if not Scopes.error_found:
-        Ds.add_to_quad_list("-", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("-", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+    
 
 def p_exp_term(t):
     'exp : term'
@@ -264,12 +248,13 @@ def p_exp_term(t):
 def p_term_mult(t):
     'term : term op_mult factor'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("*", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("*", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_term_div(t):
     'term : term op_div factor'
     if not Scopes.error_found:
-        Ds.add_to_quad_list("/", Scopes.scope_stack[-1]["addresses"])
+        Ds.add_to_quad_list("/", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
+
 
 def p_term_factor(t):
     'term : factor'
@@ -290,15 +275,16 @@ def p_factor_plus_id(t):
             Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1, address)
         else:
             Ds.add_to_operand_stack(name, 'error', 0, None)
-            error = "Variable " + name + " Does not exist in scope or has not been defined"
+            error = "Variable " + name + " Does not exist in scope or has not been defined at line " + str(t.lineno(2)) 
             Ds.errors_found.append(error)
             Ds.error_found = True
-        Ds.add_single_to_quad("+")
+        Ds.add_single_to_quad("+", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_factor_plus_cte(t):
     'factor : op_plus cte'
     if not Scopes.error_found:
-        Ds.add_single_to_quad("+")
+        Ds.add_single_to_quad("+", Scopes.scope_stack[-1]["addresses"], t.lineno(1))
+
 
 def p_factor_minus_id(t):
     'factor : op_minus identifier'
@@ -310,15 +296,15 @@ def p_factor_minus_id(t):
             Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1, address)
         else:
             Ds.add_to_operand_stack(name, 'error', 0)
-            error = "Variable " + name + " Does not exist in scope"
+            error = "Variable " + name + " Does not exist in scope at line " + str(t.lineno(2))
             Ds.errors_found.append(error)
             Ds.error_found = True
-        Ds.add_single_to_quad("-")
+        Ds.add_single_to_quad("-", Scopes.scope_stack[-1]["addresses"], t.lineno(2))
 
 def p_factor_minus_cte(t):
     'factor : op_minus cte'
     if not Scopes.error_found:
-        Ds.add_single_to_quad("-")
+        Ds.add_single_to_quad("-", Scopes.scope_stack[-1]["addresses"], t.lineno(1))
 
 def p_factor_id(t):
     'factor : identifier'
@@ -330,7 +316,7 @@ def p_factor_id(t):
             Ds.add_to_operand_stack(name, Scopes.scope_stack[-1]['var_table'][name]["type"], 1, address)
         else:
             Ds.add_to_operand_stack(name, 'error', 0, None)
-            error = "Variable " + name + " Does not exist in scope"
+            error = "Variable " + name + " Does not exist in scope at line " + str(t.lineno(1))
             Ds.errors_found.append(error)
             Ds.error_found = True
 
@@ -348,6 +334,7 @@ def p_cte_float(t):
     addr = const_table.get_or_add(t[1], "float")
     Ds.add_to_operand_stack(t[1], "float", 1, addr)
 
+
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
     'f_call : check_function opening_par arguments closing_par make_call_quads'
@@ -361,7 +348,7 @@ def p_check_function(t):
             Scopes.name_called = t[1]
             Ds.quad_list.append(("sub", Scopes.function_directory[t[1]]["address"], None, None, None))
         else:
-            error = "Function " + t[1] + " Does not exist"
+            error = "Function " + t[1] + " Does not exist at line " + str(t.lineno(1))
             Ds.errors_found.append(error)
             Ds.error_found = True
             Scopes.error_found = True
@@ -369,7 +356,7 @@ def p_check_function(t):
 def p_make_call_quads(t):
     'make_call_quads : semicol'
     if not Scopes.error_found:
-        Ds.fcallquads(Scopes)
+        Ds.fcallquads(Scopes, t.lineno(1))
 
 def p_arguments_mult(t):
     'arguments : arguments comma expression'
@@ -381,17 +368,10 @@ def p_arguments_single(t):
     t[0] = [t[1]]
     Ds.addParam()
 
+
 def p_arguments_empty(t):
     'arguments : '
     t[0] = []
-
-#Error de malos arguments
-# def p_f_call_error(t):
-#     'f_call : identifier opening_par error closing_par semicol'
-    
-#     global error_list
-#     error_list.append("At Function call: bad arguments")
-#     t[0] = []
 
 #PRINT    ::= 'print' '(' ( 'cte.string' | EXPRESSION ) ( ',' ( 'cte.string' | EXPRESSION ) )* ')' ';'
 def p_print_statement(t):
@@ -415,10 +395,12 @@ def p_print_arg_string(t):
         Ds.add_to_operand_stack(t[1], 'str', 1, addr)
         Ds.addPrint()
 
+
 def p_last_print(t):
     'last_print : semicol'
     if not Scopes.error_found:
         Ds.addLast_print()
+
 
 def p_last_print_dummy(t):
     'last_print_dummy : semicol'
@@ -444,8 +426,9 @@ def p_start_cycle_dummy(t):
 def p_end_cycle(t):
     'end_cycle : closing_par'
     if not Scopes.error_found:
-        Ds.add_cycle()
+        Ds.add_cycle(t.lineno(1))
 
+    
 def p_end_cycle_dummy(t):
     'end_cycle_dummy : closing_par'
 
@@ -463,7 +446,8 @@ def p_condition(t):
 
 def p_gotof(t):
     'gotof : closing_par'
-    Ds.add_gotof()
+    if not Scopes.error_found:
+        Ds.add_gotof(t.lineno(1))
 
 def p_gotof_dummy(t):
     'gotof_dummy : closing_par'
@@ -656,9 +640,10 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
     
 else:
     print("--Errors Found--")
-    for x in Ds.errors_found:
-        print (x)
-    for x in Scopes.errors:
-        print(x)
+    #Por si acaso, sólo imprimimos el primer error ya que es el más relevante
+    if( Ds.error_found):
+        print(Ds.errors_found[0])
+    if(Scopes.error_found):
+        print(Scopes.errors[0])
 
 # print(const_table.table)

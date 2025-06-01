@@ -29,7 +29,8 @@ void some_other( n : int )
  
  
 main 
-{  n = 5;
+{  n = -1;
+   n = 5;
    fact(n, 1);
  
    fact(n+1, 1);

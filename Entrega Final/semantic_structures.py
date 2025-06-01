@@ -23,7 +23,7 @@ class program_functions:
         self.name_called = ""
         self.current_name = ""
     #Toma en cuenta que en las funciones hay que separar en local int, validar al final con contar las variables.
-    def create_function(self, return_type, name, mem_manager):
+    def create_function(self, return_type, name, mem_manager, lineno):
         #Técnicamente ya tenemos hecho lo de los parámetros, sólo hay que modificar un poco como lo mostramos y darle memoria cuando es un void.
         self.n_params = 0
         self.n_local = 0
@@ -50,7 +50,7 @@ class program_functions:
             }
             self.scope_stack.append(self.function_directory[name])
         else:
-            error = "Error, function " + name + " already exists"
+            error = "Error, function " + name + " already exists" + " At line " + str(lineno)
             self.errors.append(error)
             self.error_found = True
 
@@ -132,7 +132,7 @@ class objects:
         # print(self.operand_stack)
 
     #Cuando entramos en una gramática con sólo expresión queda un leftover
-    def add_to_quad_list(self, operator, mem_manager):
+    def add_to_quad_list(self, operator, mem_manager, lineno):
         if not self.error_found:
             right, r_type, r_valid = self.operand_stack.pop()
             left, l_type, l_valid= self.operand_stack.pop()
@@ -145,13 +145,13 @@ class objects:
                 self.quad_list.append((operator, left, right, temp_addr, result))
             else:
                 #print("Invalid operation between " , l_type," and " ,r_type)
-                error = "Invalid operation between " + str(l_type) + " and " + str(r_type)
+                error = "Invalid operation between " + str(l_type) + " and " + str(r_type) + " At line " + str(lineno)
                 self.errors_found.append(error)
                 self.error_found = True
                 self.operand_stack.append(("error_token", "error", 0))
         
     
-    def add_assignation(self, name, scope_stack):
+    def add_assignation(self, name, scope_stack, lineno):
         if not self.error_found:
             last, last_type, is_valid = self.operand_stack.pop()
             if( name in scope_stack[-1]['var_table'] and is_valid):
@@ -164,33 +164,37 @@ class objects:
                     self.quad_list.append(result)
                 else:
                     #print("Invalid assignment, ", var['type'], "cannot be", last_type)
-                    error = "Invalid assignment, " + str(var['type']) + " cannot be "+ str(last_type)
+                    error = "Invalid assignment, " + str(var['type']) + " cannot be "+ str(last_type) + " At line " + str(lineno)
                     self.errors_found.append(error)
                     self.error_found = True
             else:
                 #print("Invalid assignment to variable ", name, ". It does not exist or expression is not valid")
-                error = "Invalid assignment to variable " + str(name) + ". It does not exist or expression is not valid"
+                error = "Invalid assignment to variable " + str(name) + ". It does not exist or expression is not valid" + " At line " + str(lineno)
                 self.errors_found.append(error)
                 self.error_found = True
 
-    def add_single_to_quad(self, operator):
+    def add_single_to_quad(self, operator, mem_manager, lineno):
         if not self.error_found:
             last, last_type, is_valid = self.operand_stack.pop()
             result = semantic_cube[''][operator][last_type]
             if(is_valid and result != 'error'):
                 self.t_count+=1
-                temp = "t_" + str(self.t_count)
-                self.operand_stack.append((temp, result, 1))
-                self.quad_list.append((operator, last, None, temp, result))
+                temp_addr = mem_manager.allocate(get_segment("temp", result))
+                if (operator != "-"):
+                    self.operand_stack.append((temp_addr, result, 1))
+                    self.quad_list.append((operator, last, None, temp_addr, result))
+                else:
+                    self.operand_stack.append((temp_addr, result, 1))
+                    self.quad_list.append(("uminus", last, "-", temp_addr, result))
             else:
                 #print("Invalid operation to ", last_type)
-                error = "Invalid operation to " +  str(last_type)
+                error = "Invalid operation to " +  str(last_type) + " At line " + str(lineno)
                 self.errors_found.append(error)
                 self.error_found = True
                 self.operand_stack.append(("error_token", "error", 0))
 
     #if
-    def add_gotof(self):
+    def add_gotof(self, lineno):
         if not self.error_found:
             last, last_type, is_valid = self.operand_stack.pop()
             if (last_type == 'bool'):
@@ -199,7 +203,7 @@ class objects:
                 self.quad_list.append(temp)
                 self.pending_jumps.append(index)
             else:
-                error = "Condition is not a boolean condition"
+                error = "Condition is not a boolean condition at line " + str(lineno)
                 self.errors_found.append(error)
                 temp = ['gotof', last, None, 0, None]
                 index = len(self.quad_list)
@@ -242,7 +246,7 @@ class objects:
         if not self.error_found:
             self.cycle_index_list.append(len(self.quad_list)+1)
 
-    def add_cycle(self):
+    def add_cycle(self, lineno):
         if not self.error_found:
             if (self.checkOperandStack):
                 last, last_type, is_valid = self.operand_stack.pop()
@@ -250,7 +254,7 @@ class objects:
                 if last_type == 'bool':
                     self.quad_list.append(('gotoV', last, None, index, last_type))
                 else:
-                    error = "Condition does not give a boolean result in cycle"
+                    error = "Condition does not give a boolean result in cycle at line " + str(lineno)
                     self.errors_found.append(error)
                     self.error_found=True
 
@@ -280,13 +284,13 @@ class objects:
             last, last_type, is_valid = self.operand_stack.pop()
             self.param_stack.append([last, last_type, is_valid])
 
-    def fcallquads(self, Scopes):
+    def fcallquads(self, Scopes, lineno):
         if not self.error_found:
             name = Scopes.name_called
             our_stack = self.param_stack
             types = Scopes.function_directory[name]['param_order']
             if len(our_stack) != len(types):
-                error = "Wrong amount of parameters for function " + name
+                error = "Wrong amount of parameters for function " + name +" at line " + str(lineno)
                 self.error_found = True
                 self.errors_found.append(error)
             else:
@@ -295,7 +299,7 @@ class objects:
                         if  our_stack[x][1] != 'string':
                             self.quad_list.append(('param', our_stack[x][0], None, None, None))
                         else:
-                            error = "At function call, parameters do not match types"
+                            error = "At function call, parameters do not match types at line " + str(lineno)
                             self.error_found = True
                             self.errors_found.append(error)
 
@@ -303,7 +307,7 @@ class objects:
                         if  our_stack[x][1] == 'string':
                             self.quad_list.append(('param', our_stack[x][0], None, None, None))
                         else:
-                            error = "At function call, parameters do not match types"
+                            error = "At function call, parameters do not match types at line " + str(lineno)
                             self.error_found = True
                             self.errors_found.append(error)    
 
