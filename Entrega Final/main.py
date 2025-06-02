@@ -15,6 +15,8 @@ Ds = objects()
 mem_manager = MemoryManager()
 const_table = ConstantTable(mem_manager)
 
+program_is_ok = True
+
 #PROGRAMA ::= 'program' 'id' ';' VARS? FUNCS* 'main' BODY 'end'
 def p_programa(t):
     'programa : PROGRAM create_program semicol vars funcs complete_main body elim_program'
@@ -645,5 +647,7 @@ else:
         print(Ds.errors_found[0])
     if(Scopes.error_found):
         print(Scopes.errors[0])
+
+    program_is_ok = False
 
 # print(const_table.table)

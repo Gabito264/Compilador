@@ -240,7 +240,7 @@ class objects:
 
     def addLast_print(self):
         if not self.error_found:
-            self.quad_list.append(("print", "\\n", None, None, "string"))
+            self.quad_list.append(("print", '"\\n"', None, None, "string"))
     
     def start_cycle(self):
         if not self.error_found:
