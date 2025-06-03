@@ -643,9 +643,9 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
 else:
     print("--Errors Found--")
     #Por si acaso, sólo imprimimos el primer error ya que es el más relevante
-    if( Ds.error_found):
+    if( Ds.error_found and len(Ds.errors_found) > 0):
         print(Ds.errors_found[0])
-    if(Scopes.error_found):
+    if( Scopes.error_found and len(Scopes.errors) > 0):
         print(Scopes.errors[0])
 
     program_is_ok = False

@@ -22,7 +22,7 @@ void some_other( n : int )
       print("hello ", 7+5); 
       xf = 7;
  
-      fact(3, 1);
+      print("hello ", xf, " ", n);
       
    } 
 ];
@@ -32,13 +32,11 @@ main
 {  n = -1;
    n = 5;
    fact(n, 1);
- 
-   fact(n+1, 1);
- 
+   some_other(10);
     do {
  
       print(3, "w", 4+5, 4.5);
-    }while( 3 < 5 / 1.5  );
+    }while( 3 >5  );
  
  
     if ( 3 >= 8)

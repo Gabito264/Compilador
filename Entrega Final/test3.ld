@@ -1,22 +1,16 @@
 program proquacks;
 var n: int;
-void fact (n: int, a:int)
-[ var b:int;
-    {
-        if (n>1)
-        {
-            b = a * n;
-            fact (n-1, b);
-        }
-        else {
-            print(a);
-        };
+void fact (n: int, a:float)
+[ var b: string;
+    {   
+        b = "Hello";
+        print(n);
+        print(a);
+        print(b);
     }
 ];
 
 main {
-    n = 5;
-    fact(n, 1);
-    fact(n+1, 1);
+    fact(4, 4.5);
 }
 end

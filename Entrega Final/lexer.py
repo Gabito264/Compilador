@@ -53,7 +53,8 @@ tokens = [
 # Se asignan en variables que inician con t_
 # Deben coincidir con lo definido en la lista tokens
 
-t_const_string = r"\"\s?.*\""
+# t_const_string = r"\"\s?.*\""
+t_const_string = r'"[^"\n]*"'
 t_op_assign = r"="
 t_semicol = r";"
 t_op_plus = r"\+"

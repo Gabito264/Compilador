@@ -8,39 +8,21 @@ Original file is located at
 """
 from main import program_is_ok
 import re
-# test = """7 17000
-# 3 17001
-# 2 17002
-# "hola" 19000
+# clase para poder guardar la dirección de una función (poder copiarla)
+class Func:
+  def __init__(self, memov, type):
+    self.memov = {}
+    self.return_quad = None
+    self.start_quad = None
+    for key in memov:
+      #Si es main hacemos una copia como tal nueva
+      if type == "main":
+        self.memov[key] = memov[key]
+      #Si es una función, entonces sólo copiamos las constantes globales
+      elif int(key) >= 17000:
+        self.memov[key] = memov[key]
+      
 
-# global_int 2
-# global_float 1
-# global_string 1
-# global_void 0
-# local_int 0
-# local_float 0
-# local_string 0
-# temp_int 1
-# temp_float 2
-# temp_bool 0
-# cte_int 3
-# cte_float 0
-# cte_string 1
-
-# 1 gotomain -1 -1 2 
-# 2 uminus 17000 - 12000 
-# 3 = 12000 -1 1000 
-# 4 = 17001 -1 1001 
-# 5 / 1000 1001 13000 
-# 6 + 13000 17002 13001 
-# 7 = 13001 -1 2000 
-# 8 = 19000 -1 3000 
-# 9 print 1000 -1 -1 
-# 10 print 1001 -1 -1 
-# 11 print 2000 -1 -1 
-# 12 print 3000 -1 -1 
-# 13 print "\\n" -1 -1 
-# """
 if program_is_ok:
 
   print("Executing code... \n")
@@ -100,21 +82,34 @@ if program_is_ok:
         memov[linea[1]] = float(linea[0])
       elif linea[1] >= "19000":
         memov[linea[1]] = linea[0].strip('"') # Quita los valores de " del principio y final del string
-    # elif (seccion == 1 and longitud == 2):
-    elif (seccion == 2):
+    #Es una función que hay que agregar a la memoria
+    elif (seccion > 1 and longitud ==1):
+      memov[linea[0]] = {}
+    elif (longitud == 5):
       quadTemp = Quad(linea[1:])
       lista_quads[int(linea[0])] = quadTemp
-
 
   # for i in memov:
   #   print(i, memov[i])
 
-  for key in lista_quads:
-    q = lista_quads[key]
-    print(key, q.op, q.arg1, q.arg2, q.destino)
+  # for key in lista_quads:
+  #   q = lista_quads[key]
+  #   print(key, q.op, q.arg1, q.arg2, q.destino)
+
+  call_stack = []
+
+  new_main = Func(memov, "main")
+
+  call_stack.append(new_main)
+
+  param_buffer = [] #guardamos los valores que le queremos meter a la función
+
+  #En el call stack, el primer valor siempre es el main
+  cur_fun = call_stack[-1]
 
   n_quads = len(lista_quads)
   current = 1
+  newFun = None
 
   print('\n\nEmpieza analisis')
 
@@ -122,64 +117,109 @@ if program_is_ok:
     current_quad = lista_quads[current]
     if (current_quad.op == 'gotomain'):
       current = int(current_quad.destino)
+    #vamos a crear una nueva función
+    elif(current_quad.op == 'sub'):
+      #generamos una subfunción nueva
+      newFun = Func(cur_fun.memov, "fun")
+      current += 1
+      #Para cada parámetro, guardamos el valor que metimos
+    elif(current_quad.op == 'param'):
+      param_buffer.append(cur_fun.memov[current_quad.arg1])
+      current+=1
+      #Sabiendo que los parámetros siempre son locales, generamos las direcciones iniciales de nuestra memoria de función
+    elif(current_quad.op == 'gosub'):
+      newFun.return_quad = current+1
+      newFun.start_quad = int(current_quad.destino)
+      start_int = 7000
+      start_float = 8000
+      start_string = 9000
+      for x in param_buffer:
+        if isinstance(x, int):
+          newFun.memov[str(start_int)] = x
+          start_int+=1
+        elif isinstance(x, float):
+          newFun.memov[str(start_float)] = x
+          start_float+=1
+        elif isinstance(x, str):
+          newFun.memov[str(start_string)] = x
+          start_string+=1
+      call_stack.append(newFun)
+      param_buffer = []
+      cur_fun = call_stack[-1]
+      current = cur_fun.start_quad
+      #Al terminar con una función, regresamos a donde estábamos
+    elif(current_quad.op == 'endfun'):
+      current = cur_fun.return_quad
+      call_stack.pop()
+      cur_fun = call_stack[-1]
     elif (current_quad.op == 'gotof'):
-      if memov[current_quad.arg1]:
+      if cur_fun.memov[current_quad.arg1]:
         current += 1
       else:
         current = int(current_quad.destino)
     elif (current_quad.op == 'goto'):
       current = int(current_quad.destino)
     elif (current_quad.op == 'gotoV'):
-      if memov[current_quad.arg1]:
+      if cur_fun.memov[current_quad.arg1]:
         current = int(current_quad.destino)
       else:
         current += 1
     elif (current_quad.op == '='):
-      memov[current_quad.destino] = memov[current_quad.arg1]
+      #Checamos para ver si truncamos si hay una asignación a un int local o global
+      if ( int(current_quad.destino) >= 1000 and int(current_quad.destino) < 2000) or (int(current_quad.destino) >=7000 and int(current_quad.destino) < 8000):
+        cur_fun.memov[current_quad.destino] = int(cur_fun.memov[current_quad.arg1])
+      elif (int(current_quad.destino) >= 8000 and int(current_quad.destino) < 9000) or (int(current_quad.destino) >=2000 and int(current_quad.destino) < 3000):
+        cur_fun.memov[current_quad.destino] = float(cur_fun.memov[current_quad.arg1])
+      else:
+        cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1]
       current += 1
     elif (current_quad.op == '+'):
-      memov[current_quad.destino] = memov[current_quad.arg1] + memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] + cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == '-'):
-      memov[current_quad.destino] = memov[current_quad.arg1] - memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] - cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == 'uminus'):
-      memov[current_quad.destino] = - memov[current_quad.arg1]
+      cur_fun.memov[current_quad.destino] = - cur_fun.memov[current_quad.arg1]
       current+=1
     elif (current_quad.op == '/'):
-      memov[current_quad.destino] = memov[current_quad.arg1] / memov[current_quad.arg2]
+      if cur_fun.memov[current_quad.arg2] != 0:
+        cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] / cur_fun.memov[current_quad.arg2]
+      else:
+        print(f"Runtime Error: Trying to divide by 0 at quad #{current}, ending analysis")
+        break
       current += 1
     elif (current_quad.op == '*'):
-      memov[current_quad.destino] = memov[current_quad.arg1] * memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] * cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == '>='):
-      memov[current_quad.destino] = memov[current_quad.arg1] >= memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] >= cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == '>'):
-      memov[current_quad.destino] = memov[current_quad.arg1] > memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] > cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == '<='):
-      memov[current_quad.destino] = memov[current_quad.arg1] <= memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] <= cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == '<'):
-      memov[current_quad.destino] = memov[current_quad.arg1] < memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] < cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == '!='):
-      memov[current_quad.destino] = memov[current_quad.arg1] != memov[current_quad.arg2]
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] != cur_fun.memov[current_quad.arg2]
       current += 1
     elif (current_quad.op == 'print'):
       if (current_quad.arg1 == '"\\n"'):
         print('\n', end = "")
       else:
-        print(memov[current_quad.arg1], end="")
+        print(cur_fun.memov[current_quad.arg1], end="")
       current += 1
     else:
       current += 1
 
-  print()
+  # print()
 
-  for i in memov:
-    print(i, memov[i])
+  # for i in memov:
+  #   print(i, memov[i])
 
 else:
   print("Errors found within the code, exiting...")
