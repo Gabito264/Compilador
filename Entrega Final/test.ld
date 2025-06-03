@@ -7,6 +7,9 @@ main
 b = 3;
 c = a / b + 2;
 d = "hola";
-print(a, b, c, d);
+print(a);
+print(b);
+print(c);
+print(d);
 }
 end

@@ -1,101 +1,53 @@
+"Hello" 19000
 1 17000
-"hello " 19000
-7 17001
-5 17002
-6 17003
-10 17004
-3 17005
-"w" 19001
-4 17006
+" " 19001
+"Let's print some stuff!" 19002
+4 17001
 4.5 18000
-8 17007
-"texto " 19002
-58 17008
-9 17009
-"xsxsxs" 19003
 
 global_int 1
-global_float 2
-global_string 1
-global_void 2
+global_float 0
+global_string 0
+global_void 1
 local_int 0
 local_float 0
 local_string 0
-temp_int 4
+temp_int 0
 temp_float 0
-temp_bool 2
-cte_int 10
+temp_bool 0
+cte_int 2
 cte_float 1
-cte_string 4
+cte_string 3
 
 4000
 params 2
-local_int 3
-local_float 0
-local_string 0
-temp_int 2
-temp_float 0
-temp_bool 1
-
-4001
-params 1
 local_int 1
 local_float 1
-local_string 0
+local_string 1
 temp_int 1
-temp_float 0
+temp_float 1
 temp_bool 0
 
-1 gotomain -1 -1 25 
-2 > 7000 17000 14000 
-3 gotof 14000 -1 12 
-4 * 7001 7000 12000 
-5 = 12000 -1 7002 
-6 sub 4000 -1 -1 
-7 - 7000 17000 12001 
-8 param 12001 -1 -1 
-9 param 7002 -1 -1 
-10 gosub 4000 -1 2 
-11 goto -1 -1 14 
-12 print 7001 -1 -1 
-13 print "\n" -1 -1 
-14 endfun -1 -1 -1 
-15 print 19000 -1 -1 
-16 + 17001 17002 12000 
-17 print 12000 -1 -1 
-18 print "\n" -1 -1 
-19 = 17001 -1 8000 
+1 gotomain -1 -1 18 
+2 = 19000 -1 9000 
+3 print 7000 -1 -1 
+4 print "\n" -1 -1 
+5 print 8000 -1 -1 
+6 print "\n" -1 -1 
+7 print 9000 -1 -1 
+8 print "\n" -1 -1 
+9 + 7000 17000 12000 
+10 print 12000 -1 -1 
+11 print 19001 -1 -1 
+12 print 9000 -1 -1 
+13 print 19001 -1 -1 
+14 + 8000 17000 13000 
+15 print 13000 -1 -1 
+16 print "\n" -1 -1 
+17 endfun -1 -1 -1 
+18 print 19002 -1 -1 
+19 print "\n" -1 -1 
 20 sub 4000 -1 -1 
-21 param 17003 -1 -1 
-22 param 17000 -1 -1 
+21 param 17001 -1 -1 
+22 param 18000 -1 -1 
 23 gosub 4000 -1 2 
-24 endfun -1 -1 -1 
-25 uminus 17000 - 12000 
-26 = 12000 -1 1000 
-27 = 17002 -1 1000 
-28 sub 4000 -1 -1 
-29 param 1000 -1 -1 
-30 param 17000 -1 -1 
-31 gosub 4000 -1 2 
-32 sub 4001 -1 -1 
-33 param 17004 -1 -1 
-34 gosub 4001 -1 15 
-35 print 17005 -1 -1 
-36 print 19001 -1 -1 
-37 + 17006 17002 12001 
-38 print 12001 -1 -1 
-39 print 18000 -1 -1 
-40 print "\n" -1 -1 
-41 > 17005 17002 14000 
-42 gotoV 14000 -1 35 
-43 >= 17005 17007 14001 
-44 gotof 14001 -1 51 
-45 print 19002 -1 -1 
-46 print "\n" -1 -1 
-47 * 17009 17002 12002 
-48 + 17008 12002 12003 
-49 = 12003 -1 1000 
-50 goto -1 -1 54 
-51 print 19003 -1 -1 
-52 print 17002 -1 -1 
-53 print "\n" -1 -1 
