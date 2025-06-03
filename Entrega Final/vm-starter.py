@@ -94,8 +94,10 @@ if program_is_ok:
     if (longitud == 0):
       seccion = seccion + 1
     elif (seccion == 0 and longitud == 2):
-      if linea[1] >= "17000" and linea[1] <= "18999":
-        memov[linea[1]] = float(linea[0]) # Guarda las constantes y su dir
+      if linea[1] >= "17000" and linea[1] <= "17999":
+        memov[linea[1]] = int(linea[0]) # Guarda las constantes y su dir
+      elif(linea[1] >= "18000" and linea[1] <= "18999"):
+        memov[linea[1]] = float(linea[0])
       elif linea[1] >= "19000":
         memov[linea[1]] = linea[0].strip('"') # Quita los valores de " del principio y final del string
     # elif (seccion == 1 and longitud == 2):
