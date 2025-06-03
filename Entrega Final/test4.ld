@@ -22,7 +22,7 @@ void some_other( n : int )
       print("hello ", 7+5); 
       xf = 7;
  
-      print("hello ", xf, " ", n);
+      fact(6,1);
       
    } 
 ];
