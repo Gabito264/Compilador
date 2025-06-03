@@ -516,12 +516,15 @@ print("\n--SEMANTICAL ANALYSIS--")
 print("-Quadruples-")
 
 if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
-    print("Number/Operator/Left/Right/result/result_type")
+    
+    #print("Number/Operator/Left/Right/result/result_type")
+    """
     count = 1
     for quad in Ds.quad_list:
         print(count, quad[0], quad[1], quad[2], quad[3], quad[4])
         count+=1
-    
+    """
+
     global_counts = {}
     for segment, base in mem_manager.counters.items():
         start = {
@@ -544,7 +547,7 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
 
     # Obtenemos contadores de las variables de cada función, sumando los valores de main a nuestros datos globales
     for x in Scopes.function_directory:
-        print(x, Scopes.function_directory[x]["address"])
+        #print(x, Scopes.function_directory[x]["address"])
         y = Scopes.function_directory[x]["addresses"]
 
         for segment, base in y.counters.items():
@@ -569,7 +572,7 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
             else:
                 Scopes.function_directory[x]["addresses"].counters[segment] = used
 
-    
+    """
     # Imprimimos contadores de las variables por función
     print("\nFunction Addresses:")
     for x in Scopes.function_directory:
@@ -591,7 +594,7 @@ if(not Ds.error_found and not Scopes.error_found and syntax_error == 0):
 
     for x in const_table.table:
         print(x, const_table.table[x])    
-
+    """
     # print("--Symbol Table--")
 
     # for scope in Scopes.function_directory:
