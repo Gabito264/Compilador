@@ -4,6 +4,7 @@
 "Let's print some stuff!" 19002
 4 17001
 4.5 18000
+0 17002
 
 global_int 1
 global_float 0
@@ -13,9 +14,9 @@ local_int 0
 local_float 0
 local_string 0
 temp_int 0
-temp_float 0
+temp_float 1
 temp_bool 0
-cte_int 2
+cte_int 3
 cte_float 1
 cte_string 3
 
@@ -48,6 +49,7 @@ temp_bool 0
 18 print 19002 -1 -1 
 19 print "\n" -1 -1 
 20 sub 4000 -1 -1 
-21 param 17001 -1 -1 
-22 param 18000 -1 -1 
-23 gosub 4000 -1 2 
+21 / 18000 17002 13000 
+22 param 17001 -1 -1 
+23 param 13000 -1 -1 
+24 gosub 4000 -1 2 
