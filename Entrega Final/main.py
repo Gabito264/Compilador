@@ -196,6 +196,9 @@ if program_is_ok:
     elif (current_quad.op == '!='):
       cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] != cur_fun.memov[current_quad.arg2]
       current += 1
+    elif (current_quad.op == '=='):
+      cur_fun.memov[current_quad.destino] = cur_fun.memov[current_quad.arg1] == cur_fun.memov[current_quad.arg2]
+      current += 1
     elif (current_quad.op == 'print'):
       if (current_quad.arg1 == '"\\n"'):
         print('\n', end = "")
