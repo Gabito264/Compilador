@@ -1,55 +1,115 @@
-"Hello" 19000
 1 17000
-" " 19001
-"Let's print some stuff!" 19002
-4 17001
-4.5 18000
-0 17002
+"F(" 19000
+") = " 19001
+"Serie Fibonacci completada" 19002
+0 17001
+"F(0) = 0" 19003
+"F(1) = 1" 19004
+2 17002
+"Error: l debe ser mayor que 0" 19005
+"=== SERIE DE FIBONACCI ===" 19006
+5 17003
+"Calculando Fibonacci hasta F(" 19007
+"):" 19008
+"" 19009
+8 17004
+"=== FIN DEL PROGRAMA ===" 19010
 
-global_int 1
+global_int 2
 global_float 0
 global_string 0
-global_void 1
+global_void 2
 local_int 0
 local_float 0
 local_string 0
 temp_int 0
-temp_float 1
+temp_float 0
 temp_bool 0
-cte_int 3
-cte_float 1
-cte_string 3
+cte_int 5
+cte_float 0
+cte_string 11
 
 4000
-params 2
-local_int 1
-local_float 1
-local_string 1
-temp_int 1
-temp_float 1
-temp_bool 0
+params 4
+local_int 5
+local_float 0
+local_string 0
+temp_int 2
+temp_float 0
+temp_bool 1
 
-1 gotomain -1 -1 18 
-2 = 19000 -1 9000 
-3 print 7000 -1 -1 
-4 print "\n" -1 -1 
-5 print 8000 -1 -1 
-6 print "\n" -1 -1 
-7 print 9000 -1 -1 
-8 print "\n" -1 -1 
-9 + 7000 17000 12000 
-10 print 12000 -1 -1 
-11 print 19001 -1 -1 
-12 print 9000 -1 -1 
-13 print 19001 -1 -1 
-14 + 8000 17000 13000 
-15 print 13000 -1 -1 
-16 print "\n" -1 -1 
-17 endfun -1 -1 -1 
-18 print 19002 -1 -1 
-19 print "\n" -1 -1 
-20 sub 4000 -1 -1 
-21 / 18000 17002 13000 
-22 param 17001 -1 -1 
-23 param 13000 -1 -1 
-24 gosub 4000 -1 2 
+4001
+params 1
+local_int 1
+local_float 0
+local_string 0
+temp_int 1
+temp_float 0
+temp_bool 3
+
+1 gotomain -1 -1 43 
+2 > 7003 17000 14000 
+3 gotof 14000 -1 19 
+4 + 7001 7002 12000 
+5 = 12000 -1 7004 
+6 print 19000 -1 -1 
+7 print 7003 -1 -1 
+8 print 19001 -1 -1 
+9 print 7004 -1 -1 
+10 print "\n" -1 -1 
+11 sub 4000 -1 -1 
+12 - 7003 17000 12001 
+13 param 7000 -1 -1 
+14 param 7002 -1 -1 
+15 param 7004 -1 -1 
+16 param 12001 -1 -1 
+17 gosub 4000 -1 2 
+18 goto -1 -1 21 
+19 print 19002 -1 -1 
+20 print "\n" -1 -1 
+21 endfun -1 -1 -1 
+22 > 7000 17001 14000 
+23 gotof 14000 -1 40 
+24 print 19003 -1 -1 
+25 print "\n" -1 -1 
+26 > 7000 17000 14001 
+27 gotof 14001 -1 39 
+28 print 19004 -1 -1 
+29 print "\n" -1 -1 
+30 > 7000 17002 14002 
+31 gotof 14002 -1 39 
+32 sub 4000 -1 -1 
+33 - 7000 17000 12000 
+34 param 7000 -1 -1 
+35 param 17001 -1 -1 
+36 param 17000 -1 -1 
+37 param 12000 -1 -1 
+38 gosub 4000 -1 2 
+39 goto -1 -1 42 
+40 print 19005 -1 -1 
+41 print "\n" -1 -1 
+42 endfun -1 -1 -1 
+43 print 19006 -1 -1 
+44 print "\n" -1 -1 
+45 = 17003 -1 1000 
+46 print 19007 -1 -1 
+47 print 1000 -1 -1 
+48 print 19008 -1 -1 
+49 print "\n" -1 -1 
+50 sub 4001 -1 -1 
+51 param 1000 -1 -1 
+52 gosub 4001 -1 22 
+53 print 19009 -1 -1 
+54 print "\n" -1 -1 
+55 = 17004 -1 1000 
+56 print 19007 -1 -1 
+57 print 1000 -1 -1 
+58 print 19008 -1 -1 
+59 print "\n" -1 -1 
+60 sub 4001 -1 -1 
+61 param 1000 -1 -1 
+62 gosub 4001 -1 22 
+63 print 19009 -1 -1 
+64 print "\n" -1 -1 
+65 print 19010 -1 -1 
+66 print "\n" -1 -1 

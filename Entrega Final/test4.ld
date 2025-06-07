@@ -15,7 +15,6 @@ void fact (n : int, a : int)
    }
 ];
  
-
 void some_other( n : int )
 [  var xf : float;
    {  @n = "woooooooooo 5"; 
@@ -26,7 +25,6 @@ void some_other( n : int )
       
    } 
 ];
- 
  
 main 
 {  n = -1;

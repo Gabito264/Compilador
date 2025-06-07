@@ -140,7 +140,7 @@ def t_error(t):
 # Definición del lexer
 lexer = lex.lex()
 
-#lineas = []
+lineas = []
 
 input_program = ""
 
@@ -157,10 +157,10 @@ input_string = input_program.split('\n')
 print("--LEXICAL ANALYSIS--")
 
 current_line = 1
-#print(f"\nLine {current_line}: {input_string[current_line - 1].lstrip()}")
+print(f"\nLine {current_line}: {input_string[current_line - 1].lstrip()}")
 #Agregamos la primera línea a nuestra lista de líneas
 
-#lineas.append([])
+lineas.append([])
 
 
 while True:
@@ -171,20 +171,20 @@ while True:
   
   #Avanzamos de línea mientras el token encontrado sea diferente a la línea actual en la que se encuentra current_line
   while tok.lineno > current_line:
-      #lineas[current_line-1].append(["EOL", ""])
+      lineas[current_line-1].append(["EOL", ""])
       current_line += 1
-      #print(f"\nLine {current_line}: {input_string[current_line - 1].lstrip()}")
-      #lineas.append([])
+      print(f"\nLine {current_line}: {input_string[current_line - 1].lstrip()}")
+      lineas.append([])
 
   #Agregamos el token válido a la línea actual.
-  #lineas[current_line-1].append([tok.type, tok.value])
-  #print(tok.type, " value:", tok.value, " lexpos: ", tok.lexpos)
+  lineas[current_line-1].append([tok.type, tok.value])
+  print(tok.type, " value:", tok.value, " lexpos: ", tok.lexpos)
 
-#lineas[current_line-1].append(["EOL", ""])
+lineas[current_line-1].append(["EOL", ""])
 
-#print("\n--SYMBOL TABLE--")
-#for simbolo in identifier_list:
-    #print("\nsymbol: ", simbolo, " found in:")
-    #for x in range(len(identifier_list[simbolo]['lines_found'])):
-        #print("line ", identifier_list[simbolo]['lines_found'][x], "lexpos ",
-              #identifier_list[simbolo]['lexpos'][x])
+print("\n--SYMBOL TABLE--")
+for simbolo in identifier_list:
+    print("\nsymbol: ", simbolo, " found in:")
+    for x in range(len(identifier_list[simbolo]['lines_found'])):
+        print("line ", identifier_list[simbolo]['lines_found'][x], "lexpos ",
+              identifier_list[simbolo]['lexpos'][x])

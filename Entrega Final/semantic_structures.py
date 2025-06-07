@@ -84,6 +84,8 @@ class program_functions:
                     if is_param:
                         current_scope[name]['is_null'] = False 
 
+                    
+
     def update_vars(self):
         if (not self.error_found):
             current_scope = self.scope_stack[-1]

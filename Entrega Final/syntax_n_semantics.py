@@ -122,6 +122,7 @@ def p_end_function(t):
 def p_param_list(t):
     'param_list : param_list comma param'
     t[0] = t[1] + [t[3]]
+    print(t[3])
 
 def p_param_list_once(t):
     'param_list : param'
@@ -136,7 +137,7 @@ def p_param(t):
     t[0] = (t[1], t[3])
     Scopes.n_params+=1
     Scopes.param_order.append(t[3])
-    Scopes.declare_vars_in_scope(t[1], t[3], t.lineno(2), True, Scopes.scope_stack[-1]["addresses"])
+    Scopes.declare_vars_in_scope([t[1]], t[3], t.lineno(2), True, Scopes.scope_stack[-1]["addresses"])
 
 #BODY     ::= '{' STATEMENT* '}'
 def p_body(t):
@@ -340,7 +341,6 @@ def p_cte_float(t):
 #F_CALL   ::= 'id' '(' ( EXPRESSION ( ',' EXPRESSION )* )? ')' ';'
 def p_f_call(t):
     'f_call : check_function opening_par arguments closing_par make_call_quads'
-
     t[0] = ('call', t[1], t[3])
 
 def p_check_function(t):
